@@ -1,5 +1,4 @@
 import random
-## TODO: Add weighted edges
 # TODO: Stoer Wagner
 
 class Graph: #Undirected, but can be a multigraph
@@ -144,6 +143,42 @@ class Graph: #Undirected, but can be a multigraph
         best_cut = 10000
         #do all the cuts, when new_cut is less than best_cut, reset best_cut
         #return best_cut
+        h = Graph(adj_mat = self.adj_mat)
+
+        summedRow = 0
+        comparedRow = 0
+
+
+        # Finding the biggest vertex
+
+        ## Working on this: not quite normal code yet
+        for i in range(len(self.adj_mat[0]))
+            for j in range(len(self.adj_mat[0])):
+                summedRow = summedRow + j
+                if j == len(self.adj.append(j)_mat[0])
+                   if summedRow > comparedRow
+                      comparedRow = summedRow
+                      summedRow = 0
+
+
+        #####
+        while len(h.adj_mat) > 2:
+            edge = (-1,-1)
+            while edge == (-1, -1):
+                edge = (random.choice(h.E))
+            print("Contracting edge:", edge)
+            h.contract(edge)
+
+        sum = 0
+        print("Edges to cut:")
+        for i in range(len(h.E)):
+            if h.E[i] == (-1, -1):
+                pass
+            else:
+                sum += 1
+                print(self.E[i])
+        print("For a total of %s edges" % sum)
+
         pass
 
 
