@@ -11,10 +11,10 @@ class Graph: #Undirected, but can be a multigraph
         if VEW == None and adj_mat == None: #If both the VEW matrix and adjacency matrix are empty
                                             #create an empty adjacency array, edge array, and weight array
 
-           # Initialize the adjacency array as a
+           # Initialize the adjacency array as a blank array
             self.adj_mat = [[0]]
 
-            # Initialize the edge and weight arrays as fields of class
+            # Initialize the edge and weight arrays as empty fields of class self
             self.E = []
             self.W = []
 
@@ -35,11 +35,10 @@ class Graph: #Undirected, but can be a multigraph
                 for j in range(i, len(self.adj_mat[i])):  # Index through columns
 
                     if self.adj_mat[i][j] != 0:           # If both i and j are not 0
-                                                          # Adjacancy matrices are square so i and j represent
-                                                          # end cap vertices of a particular edge
+                                                          # I and j represent end cap vertices of a particular edge
 
-                        self.E.append((i, j))             # Add i and j as vertices that are the ends of an edge
-                        self.W.append(0)                  # Add a 0 to W as a placeholder
+                        self.E.append((i, j))             # Add the vertex ends of the edge as a unit ot the E class
+                        self.W.append(0)                  # Add a 0 to W as a placeholder for the edge weight
 
                         # Index through every edge using end cap vertices
 
@@ -54,11 +53,11 @@ class Graph: #Undirected, but can be a multigraph
             # If we have no adjacency matrix initialize from a tuple of vertices and edges,
             # maybe easier sometimes (its faster, if nothing else)
 
-            self.E = VEW[1]    # Edges are second value in tuple
-            self.W = VEW[2]    # Weights are 3rd value in tuple
+            self.E = VEW[1]    # Edges are second value in tuple (indexes from 0)
+            self.W = VEW[2]    # Weights are 3rd value in tuple (indexes from 0)
             self.adj_mat = []  # Initialize blank adjacency array
 
-            # The 0th value in the tuple would be the number of vertices
+            # Reminder: The 0th value in the tuple would be the number of vertices
 
             for i in range(VEW[0]):
                 self.adj_mat.append([0]*VEW[0]) # Add a 0 for each vertex (placeholder)
@@ -78,7 +77,7 @@ class Graph: #Undirected, but can be a multigraph
 
             self.adj_mat = adj_mat
 
-            # Generates a test method using the method described above.
+            # Generates a test matrix using the method described above.
 
             self.E = VEW[1]
             self.W = VEW[2]
@@ -105,7 +104,7 @@ class Graph: #Undirected, but can be a multigraph
             else:
                 print("Inputs mismatched, failed to initialize.")
 
-                # Re-initialize edges and adjacency matrix in response to mismatch
+                # Re-initialize edges and adjacency matrix in response to failed test
                 self.E = []
                 self.adj_mat = [[0]]
 
@@ -137,7 +136,7 @@ class Graph: #Undirected, but can be a multigraph
             self.E.append((v1, v2))
 
     def add_vertex(self, vs, nums=None):
-        # Add vertices to an existing adjacency matrix
+        # Adds vertices and corresponding connections to an existing adjacency matrix
 
         if nums == None:
             nums = [1]*len(vs)   # Make nums the same length as vs (which is the edge #)
@@ -227,11 +226,8 @@ class Graph: #Undirected, but can be a multigraph
         print("For a total of %s edges" % sum)
         return sum
 
-
-
-
     def StoerWagner(self):
-        best_cut = 10000
+        #best_cut = 10000
 
         #do all the cuts, when new_cut is less than best_cut, reset best_cut
         #return best_cut
@@ -243,26 +239,34 @@ class Graph: #Undirected, but can be a multigraph
             edge = (-1,-1)           # Initialize edge to contracted edge condition
             while edge == (-1, -1):  # While contracted edge condition
 
-                m = Graph(adj_mat = self.adj_mat)
+                m = Graph(adj_mat = self.adj_mat) # Make a new copy of the adjacency matrix (like with Karger)
 
-                summedRow = 0
-                comparedRow = 0
+                # Initialize variables
 
-                for i in range(len(self[0])):
-                    for j in range(len(self[0])):
-                        summedRow = summedRow + j
-                    if summedRow > comparedRow
-                          comparedRow = summedRow
-                          summedRow = 0
+                summedRow = 0   # Represents a single value that will be the result of adding every value in the row
+                comparedRow = 0 # The largest value summed row value in the adjacency matrix
 
-                # Finding the biggest vertex
+                # Sum a row and compare it to a variable that stores the previous largest value
+
+                for i in range(len(self[0])):      # Index through all rows in self
+                    for j in range(len(self[0])):  # Index through all columns
+                        summedRow = summedRow + j  # Summed row = each column value added to the previous
+                    if summedRow > comparedRow     # If the value for the whole row is larger than the previous value
+                          comparedRow = summedRow  # It replaces the current largest value
+                          summedRow = 0            # And we reset the variable that stores the summed row value.
+
+                # Save the output of the previous for loop as the tightest vertex
                 tightestVertex = comparedRow
 
-                notFirstTightest = row.pop(m.self.adj_mat[firstTightest]) # Make something that represents a row in temp by removing v2 from each row
-                     row[v1] = row[v1] + row_temp # Add the v1 row to the row_Temp
+                notFirstTightest = row.pop(m.self.adj_mat[tightestVertex]) # Remove the row representing the tightest vertex from the adjacency matrix
 
-                    summedRow2 = 0
-                    comparedRow2 = 0
+                # Initialize variables
+
+                summedRow2 = 0    # Represents a single value that will be the result of adding every value in the row
+                comparedRow2 = 0  # The second largest summed row value in the adjacency matrix (because we removed the largest value row already)
+
+                # Go through the same process as above, but for the adjacency matrix without the row representing the tightest add_vertex
+                # Goal: find the second tightest vertex
 
                 for i in range(len(notFirstTightest[0])):
                     for j in range(len(notFirstTightest[0])):
@@ -271,13 +275,21 @@ class Graph: #Undirected, but can be a multigraph
                           comparedRow2 = summedRow2
                           summedRow2 = 0
 
+                # Save the output of the previous for loop as the second tightest vertex
+
                 secondTightest = comparedRow2
+
+                # Find the edge between the first and second tightest vertices
 
                 edge = (firstTightest, secondTightest)
 
             print("Contracting edge:", edge)
+
+            # contract the edge corresponding to the two tightest vertices in the adjacency matrices
+
             m.contract(edge)                 # Contract it
 
+       # Display the final cut as before
         sum = 0
         print("Edges to cut:")
         for i in range(len(m.E)):
@@ -289,7 +301,6 @@ class Graph: #Undirected, but can be a multigraph
         print("For a total of %s edges" % sum)
 
         pass
-
 
 
 if __name__ == "__main__":
