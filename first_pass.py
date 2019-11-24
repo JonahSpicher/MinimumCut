@@ -233,11 +233,20 @@ class Graph: #Undirected, but can be a multigraph
         #return best_cut
 
         m = Graph(adj_mat = self.adj_mat)
+        """
+        Looks like you do this twice, once here and then once in a while loop below. Not sure why, exactly,
+        but I bet you only need to do it here
+        """
 
 
         while len(m.adj_mat) > 2:    # While we haven't reached the condition of having two vertices
             edge = (-1,-1)           # Initialize edge to contracted edge condition
             while edge == (-1, -1):  # While contracted edge condition
+            """
+            Not sure what this second while loop is for, Stoer Wagner is deterministic and you explicitly set
+            the edge to something at the end. I included the while loop because I was randomly choosing an edge
+            from a list that included (-1, -1)
+            """
 
                 m = Graph(adj_mat = self.adj_mat) # Make a new copy of the adjacency matrix (like with Karger)
 
@@ -248,10 +257,10 @@ class Graph: #Undirected, but can be a multigraph
 
                 # Sum a row and compare it to a variable that stores the previous largest value
 
-                for i in range(len(self[0])):      # Index through all rows in self
-                    for j in range(len(self[0])):  # Index through all columns
+                for i in range(len(m.adj_mat)):      # Index through all rows in self
+                    for j in range(len(m.adj_mat[0])):  # Index through all columns
                         summedRow = summedRow + j  # Summed row = each column value added to the previous
-                    if summedRow > comparedRow     # If the value for the whole row is larger than the previous value
+                    if summedRow > comparedRow:     # If the value for the whole row is larger than the previous value
                           comparedRow = summedRow  # It replaces the current largest value
                           summedRow = 0            # And we reset the variable that stores the summed row value.
 
@@ -259,6 +268,10 @@ class Graph: #Undirected, but can be a multigraph
                 tightestVertex = comparedRow
 
                 notFirstTightest = row.pop(m.self.adj_mat[tightestVertex]) # Remove the row representing the tightest vertex from the adjacency matrix
+                """
+                This line throws an error which I think is caused by tightestVertex being set to the highest version of summed row instead of
+                the index that gave comparedRow (so the error is in the line tightestVertex = compardRow).
+                """
 
                 # Initialize variables
 
@@ -271,13 +284,16 @@ class Graph: #Undirected, but can be a multigraph
                 for i in range(len(notFirstTightest[0])):
                     for j in range(len(notFirstTightest[0])):
                         summedRow2 = summedRow2 + j
-                    if summedRow2 > comparedRow2
+                    if summedRow2 > comparedRow2:
                           comparedRow2 = summedRow2
                           summedRow2 = 0
 
                 # Save the output of the previous for loop as the second tightest vertex
 
                 secondTightest = comparedRow2
+                """
+                Similar problem as above, this gets the value, not the index
+                """
 
                 # Find the edge between the first and second tightest vertices
 
@@ -327,7 +343,8 @@ if __name__ == "__main__":
     #print(g.E)
 
     #g.contract((0,2))
-    g.Karger_cut()
+    #g.Karger_cut()
+    g.StoerWagner()
     # print(g.adj_mat)
     # print(g.E)
 
