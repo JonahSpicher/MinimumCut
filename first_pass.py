@@ -2,43 +2,84 @@ import random
 # TODO: Stoer Wagner
 
 class Graph: #Undirected, but can be a multigraph
+
     def __init__(self, VEW=None, adj_mat=None):
+
         #Format for VE initialization: V is number of vertices, E is list of edges: (v_i, v_j) connects v_i to v_j
         #So for example K_4 would be written (4, [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)])
-        if VEW == None and adj_mat == None:
-            #empty graph
+
+        if VEW == None and adj_mat == None: #If both the VEW matrix and adjacency matrix are empty
+                                            #create an empty adjacency array, edge array, and weight array
+
+           # Initialize the adjacency array as a
             self.adj_mat = [[0]]
+
+            # Initialize the edge and weight arrays as fields of class
             self.E = []
             self.W = []
 
         elif VEW == None:
-            #initialize from an adjacency matrix, usually use this one
-            self.adj_mat = adj_mat
+            # The following is if we initialize from an adjacency matrix (we'll usually use this one)
+            # If only VEW is empty, accept the adjacency matrix
+
+            self.adj_mat = adj_mat # Set the given adjacency matrix to be the adjacency matrix
+
+            # Initialize the edge and weight arrays as fields of class
+
             self.E = []
             self.W = []
-            for i in range(len(self.adj_mat)):
-                for j in range(i, len(self.adj_mat[i])):
-                    if self.adj_mat[i][j] != 0:
-                        self.E.append((i, j))
-                        self.W.append(0)
+
+            # Index through every value in the adjacency matrix.
+
+            for i in range(len(self.adj_mat)):            # Index through rows
+                for j in range(i, len(self.adj_mat[i])):  # Index through columns
+
+                    if self.adj_mat[i][j] != 0:           # If both i and j are not 0
+                                                          # Adjacancy matrices are square so i and j represent
+                                                          # end cap vertices of a particular edge
+
+                        self.E.append((i, j))             # Add i and j as vertices that are the ends of an edge
+                        self.W.append(0)                  # Add a 0 to W as a placeholder
+
+                        # Index through every edge using end cap vertices
+
                         for k in range(self.adj_mat[i][j]):
-                            self.W[-1] += 1
+                            self.W[-1] += 1 # Adding 1 to every previous weight to make current
+
 
         elif adj_mat == None:
-            #initialize from a tuple of vertices and edges, maybe easier sometimes (its faster, if nothing else)
-            self.E = VEW[1]
-            self.W = VEW[2]
-            self.adj_mat = []
+
+            # Alternate way to initialize: If you already have vertices and edges
+
+            # If we have no adjacency matrix initialize from a tuple of vertices and edges,
+            # maybe easier sometimes (its faster, if nothing else)
+
+            self.E = VEW[1]    # Edges are second value in tuple
+            self.W = VEW[2]    # Weights are 3rd value in tuple
+            self.adj_mat = []  # Initialize blank adjacency array
+
+            # The 0th value in the tuple would be the number of vertices
+
             for i in range(VEW[0]):
-                self.adj_mat.append([0]*VEW[0])
+                self.adj_mat.append([0]*VEW[0]) # Add a 0 for each vertex (placeholder)
             print(self.adj_mat)
+
+            # Index through the edges by indexing through the end cap vertices related
+            # to the edge and using them to create edge weights
+
             for i in range(len(self.E)):
                 #print("current edge:", self.E[i][0], self.E[i][1])
                 self.adj_mat[self.E[i][0]][self.E[i][1]] += self.W[i]
                 self.adj_mat[self.E[i][1]][self.E[i][0]] += self.W[i]
+
         else:
-            #initialize from one, check with the other. If wrong, throw error
+
+            # Saves given adjacency matrix as adjacency matrix.
+
             self.adj_mat = adj_mat
+
+            # Generates a test method using the method described above.
+
             self.E = VEW[1]
             self.W = VEW[2]
             test_adj_mat = []
@@ -47,37 +88,70 @@ class Graph: #Undirected, but can be a multigraph
             print(self.adj_mat)
             for i in range(len(self.E)):
                 #print("current edge:", self.E[i][0], self.E[i][1])
+
+                # There are two of these because for every edge in the adjacency matrix,
+                # there will be two relevant vertices.
+
+                # For example: the edge made by vertex 1 and vertex 2 will be represented
+                # by 2,1 and 1,2
+
                 test_adj_mat[self.E[i][0]][self.E[i][1]] += self.W[i]
                 test_adj_mat[self.E[i][1]][self.E[i][0]] += self.W[i]
+
+            # Compares the two. If wrong, throws error.
+
             if test_adj_mat == self.adj_mat:
                 print("Inputs matched, graph initialized.")
             else:
                 print("Inputs mismatched, failed to initialize.")
+
+                # Re-initialize edges and adjacency matrix in response to mismatch
                 self.E = []
                 self.adj_mat = [[0]]
 
+
     def add_lone_vertex(self):
-        self.adj_mat.append([0]*(len(self.adj_mat) - 1))
+           # Add an additional row. Then add an additional 0 to each row.
+           # Essentially it increases the column # and row # by 1.
+
+        self.adj_mat.append([0]*(len(self.adj_mat) - 1)) ## Will this add an additional row?
         for row in self.adj_mat:
             row.append(0)
 
+
     def add_edge(self, v1, v2, num=1):
+        # Index to the intersection between two vertices in the matrix and add
+        # num to each place where the intersection occurs
+
+        # Note: this is also accounting for the fact that there will be two places
+        # in the adjacency matrix that represent a single edge.
+
+        #Example: The edge that connects vertex 1 and vertex 2 is represented by (2,1) and (1,2)
+
         self.adj_mat[v1][v2] += num
         self.adj_mat[v2][v1] += num
+
+        # Append the new vertex to the edge matrix
+
         for i in range(num):
             self.E.append((v1, v2))
 
     def add_vertex(self, vs, nums=None):
-        #nums should be a list of the same length as vs, corresponding to number of edges
+        # Add vertices to an existing adjacency matrix
+
         if nums == None:
-            nums = [1]*len(vs)
-        self.add_lone_vertex()
-        for i in range(len(vs)):
+            nums = [1]*len(vs)   # Make nums the same length as vs (which is the edge #)
+        self.add_lone_vertex()   # Add a vertex
+        for i in range(len(vs)): # Add edges that correspond with the vertex
             self.add_edge(self.V[-1], vs[i], nums[i])
 
     def contract(self, edge):
-        #edge is a tuple of the two connected vertices
-        #Remembers edges using index in self.E
+        # Edge is a tuple of the two connected vertices
+        # Remembers edges using index in self.
+
+        # Compare the vertices in the tuple (edge[0] and edge[1]). Assign the smaller to be
+        # v1 and the larger to be v2
+
         if edge[0] < edge[1]:
             v1 = edge[0]
             v2 = edge[1]
@@ -85,13 +159,23 @@ class Graph: #Undirected, but can be a multigraph
             v1 = edge[1]
             v2 = edge[0]
 
+        # If we are referring to either intersection between the two vertices within
+        # the adjacency matrix
+
         if (v1, v2) in self.E or (v2, v1) in self.E:
+
+            # Make a version of the matrix with v2 removed
             temp = self.adj_mat.pop(v2)
+
+            # Create a matrix that is the sum of each value in v1 with each value in temp
             self.adj_mat[v1] = [sum(x) for x in zip(self.adj_mat[v1], temp)]
+
+            # Index through matrix rows
             for row in self.adj_mat:
-                row_temp = row.pop(v2)
-                row[v1] = row[v1] + row_temp
-            self.adj_mat[v1][v1] = 0
+                row_temp = row.pop(v2) # Make something that represents a row in temp by removing v2 from each row
+                row[v1] = row[v1] + row_temp # Add the v1 row to the row_Temp
+
+            self.adj_mat[v1][v1] = 0  # Make the index (v1, v1) = 0
 
             for i in range(len(self.E)):
                 #print("testing edge:")
@@ -120,16 +204,20 @@ class Graph: #Undirected, but can be a multigraph
         #First make a copy so the original isnt disturbed
         h = Graph(adj_mat=self.adj_mat)
         #Now do the cut
-        while len(h.adj_mat) > 2:
-            edge = (-1,-1)
-            while edge == (-1, -1):
-                edge = (random.choice(h.E))
+        while len(h.adj_mat) > 2:    # While we haven't reached the condition of having two vertices
+            edge = (-1,-1)           # Initialize edge to contracted edge condition
+            while edge == (-1, -1):  # While contracted edge condition
+                edge = (random.choice(h.E))  # Choose a random edge
             print("Contracting edge:", edge)
-            h.contract(edge)
+            h.contract(edge)                 # Contract it
 
         #Display stuff
         sum = 0
         print("Edges to cut:")
+
+        # Index through matrix. If the edge is contracted, skip it. If it's not, add to printed stuff
+        # and display it.
+
         for i in range(len(h.E)):
             if h.E[i] == (-1, -1):
                 pass
@@ -139,40 +227,61 @@ class Graph: #Undirected, but can be a multigraph
         print("For a total of %s edges" % sum)
         return sum
 
+
+
+
     def StoerWagner(self):
         best_cut = 10000
+
         #do all the cuts, when new_cut is less than best_cut, reset best_cut
         #return best_cut
-        h = Graph(adj_mat = self.adj_mat)
 
-        summedRow = 0
-        comparedRow = 0
+        m = Graph(adj_mat = self.adj_mat)
 
 
-        # Finding the biggest vertex
+        while len(m.adj_mat) > 2:    # While we haven't reached the condition of having two vertices
+            edge = (-1,-1)           # Initialize edge to contracted edge condition
+            while edge == (-1, -1):  # While contracted edge condition
 
-        ## Working on this: not quite normal code yet
-        for i in range(len(self.adj_mat[0]))
-            for j in range(len(self.adj_mat[0])):
-                summedRow = summedRow + j
-                if j == len(self.adj.append(j)_mat[0])
-                   if summedRow > comparedRow
-                      comparedRow = summedRow
-                      summedRow = 0
+                m = Graph(adj_mat = self.adj_mat)
 
+                summedRow = 0
+                comparedRow = 0
 
-        #####
-        while len(h.adj_mat) > 2:
-            edge = (-1,-1)
-            while edge == (-1, -1):
-                edge = (random.choice(h.E))
+                for i in range(len(self[0])):
+                    for j in range(len(self[0])):
+                        summedRow = summedRow + j
+                    if summedRow > comparedRow
+                          comparedRow = summedRow
+                          summedRow = 0
+
+                # Finding the biggest vertex
+                tightestVertex = comparedRow
+
+                notFirstTightest = row.pop(m.self.adj_mat[firstTightest]) # Make something that represents a row in temp by removing v2 from each row
+                     row[v1] = row[v1] + row_temp # Add the v1 row to the row_Temp
+
+                    summedRow2 = 0
+                    comparedRow2 = 0
+
+                for i in range(len(notFirstTightest[0])):
+                    for j in range(len(notFirstTightest[0])):
+                        summedRow2 = summedRow2 + j
+                    if summedRow2 > comparedRow2
+                          comparedRow2 = summedRow2
+                          summedRow2 = 0
+
+                secondTightest = comparedRow2
+
+                edge = (firstTightest, secondTightest)
+
             print("Contracting edge:", edge)
-            h.contract(edge)
+            m.contract(edge)                 # Contract it
 
         sum = 0
         print("Edges to cut:")
-        for i in range(len(h.E)):
-            if h.E[i] == (-1, -1):
+        for i in range(len(m.E)):
+            if m.E[i] == (-1, -1):
                 pass
             else:
                 sum += 1
