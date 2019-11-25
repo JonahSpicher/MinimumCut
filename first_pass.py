@@ -240,55 +240,59 @@ class Graph: #Undirected, but can be a multigraph
 
                 # Initialize variables
 
-                summedRow = 0    # Represents a single value that will be the result of adding every value in the row
-                summedRowIndex = 0
-                comparedRow = 0  # The largest value summed row value in the adjacency matrix
+            summedRow = 0    # Represents a single value that will be the result of adding every value in the row
+            summedRowIndex = 0
+            comparedRow = 0  # The largest value summed row value in the adjacency matrix
 
-                # Sum a row and compare it to a variable that stores the previous largest value
+            # Sum a row and compare it to a variable that stores the previous largest value
 
-                for i in range(len(m.adj_mat)):         # Index through all rows in self
-                    for j in range(len(m.adj_mat[0])):  # Index through all columns
-                        summedRow = summedRow + j       # Summed row = each column value added to the previous
-                    if summedRow > comparedRow:         # If the value for the whole row is larger than the previous value
-                          comparedRow = summedRow       # It replaces the current largest value
-                          comparedRowIndex = zip(i,j)
-                          summedRow = 0                 # And we reset the variable that stores the summed row value.
+            for i in range(len(m.adj_mat)):         # Index through all rows in self
+                for j in range(len(m.adj_mat[0])):  # Index through all columns
+                    summedRow = summedRow + j       # Summed row = each column value added to the previous
+                if summedRow > comparedRow:         # If the value for the whole row is larger than the previous value
+                      comparedRow = summedRow       # It replaces the current largest value
+                      comparedRowIndex = (i,j)
+                      summedRow = 0                 # And we reset the variable that stores the summed row value.
 
-                # Save the output of the previous for loop as the tightest vertex
+            # Save the output of the previous for loop as the tightest vertex
 
-                tightestVertex = comparedRowIndex
+            tightestVertex = comparedRowIndex
 
-                notFirstTightest = row.pop(m.self.adj_mat[tightestVertex]) # Remove the row representing the tightest vertex from the adjacency matrix
+            notFirstTightest = 0
 
-                # Initialize variables
+            for row in m.adj_mat:
+                if row == comparedRowIndex[1]:
+                    notFirstTightest = m.adj_mat.pop(row)
 
-                summedRow2 = 0    # Represents a single value that will be the result of adding every value in the row
-                comparedRow2 = 0  # The second largest summed row value in the adjacency matrix (because we removed the largest value row already)
+            # Initialize variables
 
-                # Go through the same process as above, but for the adjacency matrix without the row representing the tightest add_vertex
-                # Goal: find the second tightest vertex
+            summedRow2 = 0    # Represents a single value that will be the result of adding every value in the row
+            comparedRow2 = 0  # The second largest summed row value in the adjacency matrix (because we removed the largest value row already)
 
-                for i in range(len(notFirstTightest[0])):
-                    for j in range(len(notFirstTightest[0])):
-                        summedRow2 = summedRow2 + j
-                    if summedRow2 > comparedRow2:
-                          comparedRow2 = summedRow2
-                          comparedRow2Index = zip(i,j)
-                          summedRow2 = 0
+            # Go through the same process as above, but for the adjacency matrix without the row representing the tightest add_vertex
+            # Goal: find the second tightest vertex
 
-                # Save the output of the previous for loop as the second tightest vertex
+            for i in range(len(notFirstTightest)):
+                for j in range(len(notFirstTightest)):
+                    summedRow2 = summedRow2 + j
+                if summedRow2 > comparedRow2:
+                      comparedRow2 = summedRow2
+                      comparedRow2Index = (i,j)
+                      summedRow2 = 0
 
-                secondTightest = comparedRow2Index
+            # Save the output of the previous for loop as the second tightest vertex
 
-                # Find the edge between the first and second tightest vertices
+            secondTightest = comparedRow2Index
 
-                edge = (firstTightest, secondTightest)
+            # Find the edge between the first and second tightest vertices
+
+            edge = (firstTightest, secondTightest)
 
             print("Contracting edge:", edge)
 
             # contract the edge corresponding to the two tightest vertices in the adjacency matrices
 
-            m.contract(edge)                 # Contract it
+            m.contract(edge)
 
        # Display the final cut as before
         sum = 0
