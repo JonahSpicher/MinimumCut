@@ -61,7 +61,7 @@ class Graph: #Undirected, but can be a multigraph
 
             for i in range(VEW[0]):
                 self.adj_mat.append([0]*VEW[0]) # Add a 0 for each vertex (placeholder)
-            print(self.adj_mat)
+            #print(self.adj_mat)
 
             # Index through the edges by indexing through the end cap vertices related
             # to the edge and using them to create edge weights
@@ -84,7 +84,7 @@ class Graph: #Undirected, but can be a multigraph
             test_adj_mat = []
             for i in range(VEW[0]):
                 test_adj_mat.append([0]*VEW[0])
-            print(self.adj_mat)
+            #print(self.adj_mat)
             for i in range(len(self.E)):
                 #print("current edge:", self.E[i][0], self.E[i][1])
 
@@ -150,6 +150,11 @@ class Graph: #Undirected, but can be a multigraph
 
         # Compare the vertices in the tuple (edge[0] and edge[1]). Assign the smaller to be
         # v1 and the larger to be v2
+        # Edge is a tuple of the two connected vertices
+        # Remembers edges using index in self.
+
+        # Compare the vertices in the tuple (edge[0] and edge[1]). Assign the smaller to be
+        # v1 and the larger to be v2
 
         if edge[0] < edge[1]:
             v1 = edge[0]
@@ -195,9 +200,10 @@ class Graph: #Undirected, but can be a multigraph
                     #print("Found renumbered edge 1")
                     self.E[i] = (self.E[i][0], self.E[i][1]-1)
 
-
         else:
             print("Edge not contained in graph.")
+
+            pass
 
     def Karger_cut(self):
         #First make a copy so the original isnt disturbed
@@ -207,12 +213,12 @@ class Graph: #Undirected, but can be a multigraph
             edge = (-1,-1)           # Initialize edge to contracted edge condition
             while edge == (-1, -1):  # While contracted edge condition
                 edge = (random.choice(h.E))  # Choose a random edge
-            print("Contracting edge:", edge)
+            #print("Contracting edge:", edge)
             h.contract(edge)                 # Contract it
 
         #Display stuff
         sum = 0
-        print("Edges to cut:")
+        #print("Edges to cut:")
 
         # Index through matrix. If the edge is contracted, skip it. If it's not, add to printed stuff
         # and display it.
@@ -222,91 +228,71 @@ class Graph: #Undirected, but can be a multigraph
                 pass
             else:
                 sum += 1
-                print(self.E[i])
-        print("For a total of %s edges" % sum)
+                #print(self.E[i])
+        #print("For a total of %s edges" % sum)
         return sum
 
-    def StoerWagner(self):
-        #best_cut = 10000
+    # The Stoer Wagner algorithm is based on the original paper on the subject
+    # (link here: https://www.cs.dartmouth.edu/~ac/Teach/CS105-Winter05/Handouts/stoerwagner-mincut.pdf )
 
-        #do all the cuts, when new_cut is less than best_cut, reset best_cut
+    # In our interpretation self is the graph (G), a is the initial a value,
+    # and w is the weights W
+
+
+    # The goal of Stoer-Wagner: do all the cuts, when new_cut is less than best_cut, reset best_cut
         #return best_cut
 
-        m = Graph(adj_mat = self.adj_mat)
+    def StoerWagnerPhase(self, a = 1):
 
+    # First let's initialize a new version of the adjacency matrix so we don't overwrite what we previously
+    #established
 
-        while len(m.adj_mat) > 2:    # While we haven't reached the condition of having two vertices
-            edge = (-1,-1)           # Initialize edge to contracted edge condition
+        c = Graph(adj_mat=self.adj_mat)
 
-                # Initialize variables
+        # Initialize A to a value
 
-            summedRow = 0    # Represents a single value that will be the result of adding every value in the row
+        A = a
+
+        # Initialize V (the number of vertices we're dealing with)
+        V = len(c.adj_mat)
+
+        while A != V
+
+            summedRow = 0       # Represents a single value that will be the result of adding every value in the row
             summedRowIndex = 0
-            comparedRow = 0  # The largest value summed row value in the adjacency matrix
+            comparedRow = 0     # The largest value summed row value in the adjacency matrix
 
             # Sum a row and compare it to a variable that stores the previous largest value
 
-            for i in range(len(m.adj_mat)):         # Index through all rows in self
-                for j in range(len(m.adj_mat[0])):  # Index through all columns
-                    summedRow = summedRow + j       # Summed row = each column value added to the previous
-                if summedRow > comparedRow:         # If the value for the whole row is larger than the previous value
-                      comparedRow = summedRow       # It replaces the current largest value
-                      comparedRowIndex = (i,j)
-                      summedRow = 0                 # And we reset the variable that stores the summed row value.
+            for i in range(len(c.adj_mat)):                  # Index through all rows in self
+                for j in range(len(c.adj_mat)):              # Index through all columns
+                    summedRow = summedRow + c.adj_mat[i][j]  # Summed row = each column value added to the previous
+                if summedRow > comparedRow:                  # If the value for the whole row is larger than the previous value
+                      comparedRow = summedRow                # It replaces the current largest value
+                      comparedRow = i                        # Creating an index for the tightest row.
+                      summedRow = 0
 
-            # Save the output of the previous for loop as the tightest vertex
+            tightestVertex = comparedRow
 
-            tightestVertex = comparedRowIndex
+            A += comparedRow
 
-            notFirstTightest = 0
+      edge = (A[-1], A)
 
-            for row in m.adj_mat:
-                if row == comparedRowIndex[1]:
-                    notFirstTightest = m.adj_mat.pop(row)
+      cutOfPhase = c.contract(edge)
 
-            # Initialize variables
+    def StoerWagner(self, a = 1):
 
-            summedRow2 = 0    # Represents a single value that will be the result of adding every value in the row
-            comparedRow2 = 0  # The second largest summed row value in the adjacency matrix (because we removed the largest value row already)
+        # First, we create a variable representing minimum cut and set it to 0
 
-            # Go through the same process as above, but for the adjacency matrix without the row representing the tightest add_vertex
-            # Goal: find the second tightest vertex
+        currentMinimumCut = 0
 
-            for i in range(len(notFirstTightest)):
-                for j in range(len(notFirstTightest)):
-                    summedRow2 = summedRow2 + j
-                if summedRow2 > comparedRow2:
-                      comparedRow2 = summedRow2
-                      comparedRow2Index = (i,j)
-                      summedRow2 = 0
+        # Then we use a while loop based on vertex #
 
-            # Save the output of the previous for loop as the second tightest vertex
+        while V > 1
 
-            secondTightest = comparedRow2Index
-
-            # Find the edge between the first and second tightest vertices
-
-            edge = (firstTightest, secondTightest)
-
-            print("Contracting edge:", edge)
-
-            # contract the edge corresponding to the two tightest vertices in the adjacency matrices
-
-            m.contract(edge)
-
-       # Display the final cut as before
-        sum = 0
-        print("Edges to cut:")
-        for i in range(len(m.E)):
-            if m.E[i] == (-1, -1):
-                pass
-            else:
-                sum += 1
-                print(self.E[i])
-        print("For a total of %s edges" % sum)
-
-        pass
-
+            StoerWagnerPhase(self)
+            if cutOfPhase < currentMinimumCut
+                then currentMinimumCut = cutOfPhase
 
 if __name__ == "__main__":
     test_mat = [[0, 1, 1, 1, 1],
