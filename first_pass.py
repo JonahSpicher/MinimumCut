@@ -216,6 +216,7 @@ class Graph: #Undirected, but can be a multigraph
             #print("Contracting edge:", edge)
             h.contract(edge)                 # Contract it
 
+
         #Display stuff
         sum = 0
         #print("Edges to cut:")
@@ -228,8 +229,8 @@ class Graph: #Undirected, but can be a multigraph
                 pass
             else:
                 sum += 1
-                #print(self.E[i])
-        #print("For a total of %s edges" % sum)
+                print(self.E[i])
+        print("For a total of %s edges" % sum)
         return sum
 
     # The Stoer Wagner algorithm is based on the original paper on the subject
@@ -300,17 +301,39 @@ class Graph: #Undirected, but can be a multigraph
 
             A.append(nextTightestVertex)
 
+            # Set the current index to be the last value in A (-1 because it indexes from 0)
+
             currentIndex = len(A) - 1
 
-
+            # Set the edge to be the edge between the two tightest vertices
+            # The tightest will be the last value of A and the second tightest will be the one before
 
             edge = (A[currentIndex-1], A[currentIndex])
 
+            # Contract the edge associated with the two tightest vertices
+
             cutOfPhase = c.contract(edge)
+
+            # Initialize the sum of the edges cut (the cut itself)
+
+            sum = 0
+
+            # Index through all of the edges and skip over any edges that are contracted
+            # Else add it to the sum (as a part of the cut)
+
+            for i in range(len(c.E)):
+                if c.E[i] == (-1, -1):
+                    pass
+                else:
+                    sum += 1
+                    #print(self.E[i])
+            #print("For a total of %s edges" % sum)
+            return sum
+            print(sum)
 
             # First, we create a variable representing minimum cut and set it to 0
 
-            currentMinimumCut = 0
+            currentMinimumCut = 5
 
             # Then we use a while loop that runs as long as the function does and perform Stoer-Wagner.
 
@@ -319,8 +342,10 @@ class Graph: #Undirected, but can be a multigraph
 
             # if V > 1:
 
-            if cutOfPhase < currentMinimumCut:
-                currentMinimumCut = cutOfPhase
+            if sum < currentMinimumCut:
+                currentMinimumCut = sum
+
+
 
 if __name__ == "__main__":
     test_mat = [[0, 1, 1, 1, 1],
