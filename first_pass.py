@@ -244,24 +244,38 @@ class Graph: #Undirected, but can be a multigraph
 
     def StoerWagner(self, a = 1):
 
+    ## TODO: figure out how to make the cut work for the given set of edges.
+    # Figure out how to make the first vertex chosen random
+
     # First let's initialize a new version of the adjacency matrix so we don't overwrite what we previously
     #established
 
+
         c = Graph(adj_mat=self.adj_mat)
 
-        # Initialize A to a random vertex
-
-        A = [random.choice(c.V)]
 
         # Initialize V (the number of vertices we're dealing with)
 
-        V = len(c.adj_mat)
+
+        V = []
+        for i in range(0, len(c.adj_mat), 1):
+            V.append(i)
+
+
+        # Initialize A to a random vertex (or just to 0)
+
+        #a = random.choice(V)
+
+        a = 0
+
+        A = [a]
 
         # I combined the phase and StoerWagner because it was easier, so this is the currentMinimumCut
 
         currentMinimumCut = 0
 
-        while len(A) != V:
+
+        if len(A) <= (len(V)):
 
             summedRow = 0       # Represents a single value that will be the result of adding every value in the row
             comparedRow = 0     # The largest value summed row value in the adjacency matrix
@@ -280,26 +294,30 @@ class Graph: #Undirected, but can be a multigraph
 
             nextTightestVertex = comparedRow
 
+            nextTightestVertex
+
             # Add the new vertex to the list A
 
             A.append(nextTightestVertex)
 
-            currentIndex = len(A)
+            currentIndex = len(A) - 1
+
+
 
             edge = (A[currentIndex-1], A[currentIndex])
 
             cutOfPhase = c.contract(edge)
 
-        # First, we create a variable representing minimum cut and set it to 0
+            # First, we create a variable representing minimum cut and set it to 0
 
-        currentMinimumCut = 0
+            currentMinimumCut = 0
 
-        # Then we use a while loop that runs as long as the function does and perform Stoer-Wagner.
+            # Then we use a while loop that runs as long as the function does and perform Stoer-Wagner.
 
-        # This means comparing the current minimum cut and storing cut of phase as the current minimum cut if
-        # it is smaller.
+            # This means comparing the current minimum cut and storing cut of phase as the current minimum cut if
+            # it is smaller.
 
-        while V > 1:
+            # if V > 1:
 
             if cutOfPhase < currentMinimumCut:
                 currentMinimumCut = cutOfPhase
