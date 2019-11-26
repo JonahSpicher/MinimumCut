@@ -20,7 +20,6 @@ def combineHighest(self):
         #Initialize variables
 
         summedRow = 0       # Represents a single value that will be the result of adding every value in the row
-        summedRowIndex = 0
         comparedRow = 0     # The largest value summed row value in the adjacency matrix
 
         # Sum a row and compare it to a variable that stores the previous largest value

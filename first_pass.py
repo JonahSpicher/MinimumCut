@@ -242,24 +242,28 @@ class Graph: #Undirected, but can be a multigraph
     # The goal of Stoer-Wagner: do all the cuts, when new_cut is less than best_cut, reset best_cut
         #return best_cut
 
-    def StoerWagnerPhase(self, a = 1):
+    def StoerWagner(self, a = 1):
 
     # First let's initialize a new version of the adjacency matrix so we don't overwrite what we previously
     #established
 
         c = Graph(adj_mat=self.adj_mat)
 
-        # Initialize A to a value
+        # Initialize A to a random vertex
 
-        A = a
+        A = [random.choice(c.V)]
 
         # Initialize V (the number of vertices we're dealing with)
+
         V = len(c.adj_mat)
 
-        while A != V
+        # I combined the phase and StoerWagner because it was easier, so this is the currentMinimumCut
+
+        currentMinimumCut = 0
+
+        while len(A) != V:
 
             summedRow = 0       # Represents a single value that will be the result of adding every value in the row
-            summedRowIndex = 0
             comparedRow = 0     # The largest value summed row value in the adjacency matrix
 
             # Sum a row and compare it to a variable that stores the previous largest value
@@ -267,32 +271,38 @@ class Graph: #Undirected, but can be a multigraph
             for i in range(len(c.adj_mat)):                  # Index through all rows in self
                 for j in range(len(c.adj_mat)):              # Index through all columns
                     summedRow = summedRow + c.adj_mat[i][j]  # Summed row = each column value added to the previous
-                if summedRow > comparedRow:                  # If the value for the whole row is larger than the previous value
+                if summedRow > comparedRow and i != A:        # If the value for the whole row is larger than the previous value (and not A)
                       comparedRow = summedRow                # It replaces the current largest value
                       comparedRow = i                        # Creating an index for the tightest row.
                       summedRow = 0
 
-            tightestVertex = comparedRow
+            # The next tightest vertex will be the i for which the row has the largest sum
 
-            A += comparedRow
+            nextTightestVertex = comparedRow
 
-      edge = (A[-1], A)
+            # Add the new vertex to the list A
 
-      cutOfPhase = c.contract(edge)
+            A.append(nextTightestVertex)
 
-    def StoerWagner(self, a = 1):
+            currentIndex = len(A)
+
+            edge = (A[currentIndex-1], A[currentIndex])
+
+            cutOfPhase = c.contract(edge)
 
         # First, we create a variable representing minimum cut and set it to 0
 
         currentMinimumCut = 0
 
-        # Then we use a while loop based on vertex #
+        # Then we use a while loop that runs as long as the function does and perform Stoer-Wagner.
 
-        while V > 1
+        # This means comparing the current minimum cut and storing cut of phase as the current minimum cut if
+        # it is smaller.
 
-            StoerWagnerPhase(self)
-            if cutOfPhase < currentMinimumCut
-                then currentMinimumCut = cutOfPhase
+        while V > 1:
+
+            if cutOfPhase < currentMinimumCut:
+                currentMinimumCut = cutOfPhase
 
 if __name__ == "__main__":
     test_mat = [[0, 1, 1, 1, 1],
