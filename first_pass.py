@@ -245,8 +245,8 @@ class Graph: #Undirected, but can be a multigraph
 
     def StoerWagner(self, a = 1):
 
-    ## TODO: figure out how to make the cut work for the given set of edges.
-    # Figure out how to make the first vertex chosen random
+    ## TODO: # Might have to look at the behavior for the first time step. It seems like from the paper that regardless of starting point,
+    #          it winds up going to the tightest connected vertex immediately.
 
     # First let's initialize a new version of the adjacency matrix so we don't overwrite what we previously
     #established
