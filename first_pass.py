@@ -264,8 +264,6 @@ class Graph: #Undirected, but can be a multigraph
 
         a = random.choice(V)
 
-        #a = 0
-
         A = [a]
 
         # I combined the phase and StoerWagner because it was easier, so this is the currentMinimumCut
@@ -277,8 +275,8 @@ class Graph: #Undirected, but can be a multigraph
             currentVertex = A[len(A) - 1]
 
 
-            summedRow = 0       # Represents a single value that will be the result of adding every value in the row
-            comparedRow = 0     # The largest value summed row value in the adjacency matrix
+            summedRow = 0    # Represents a single value that will be the result of adding every value in the row
+            comparedRow = 0  # The largest value summed row value in the adjacency matrix
 
             # Sum a row and compare it to a variable that stores the previous largest value
 
@@ -297,8 +295,6 @@ class Graph: #Undirected, but can be a multigraph
             # The next tightest vertex will be the i for which the row has the largest sum
 
             nextTightestVertex = comparedRow
-
-            nextTightestVertex
 
             # Add the new vertex to the list A
 
