@@ -253,7 +253,7 @@ class Graph: #Undirected, but can be a multigraph
     # First let's initialize a new version of the adjacency matrix so we don't overwrite what we previously
     #established
 
-        c = Graph(adj_mat=self.adj_mat)
+        c = copy.deepcopy(self)
 
         # Initialize V (the number of vertices we're dealing with)
 
