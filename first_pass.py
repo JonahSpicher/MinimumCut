@@ -285,14 +285,14 @@ class Graph: #Undirected, but can be a multigraph
             for i in range(len(c.adj_mat)):                                        # Index through all rows in the adjacency matrix
                 for j in range(len(c.adj_mat)):                                    # Index through all columns in the adjacency matrix
 
-                    if i != currentVertex and c.adj_mat[i][currentVertex] == 1:    # Make sure the row considered is not the current vertex,
+                    if i != currentVertex and c.adj_mat[i][currentVertex] >= 1:    # Make sure the row considered is not the current vertex,
                                                                                    # but is connected to the current vertex
 
                         summedRow = summedRow + c.adj_mat[i][j]                    # Summed row = each column value added to the previous
-                        if summedRow > comparedRow:                                # If the value for the whole row is larger than the previous value (and not A)
-                              comparedRow = summedRow                              # It replaces the current largest value
-                              comparedRow = i                                      # Creating an index for the tightest row.
-                              summedRow = 0
+                if summedRow > comparedRow:                                # If the value for the whole row is larger than the previous value (and not A)
+                      comparedRow = summedRow                              # It replaces the current largest value
+                      comparedRow = i                                      # Creating an index for the tightest row.
+                      summedRow = 0
 
             # The next tightest vertex will be the i for which the row has the largest sum
 
@@ -424,8 +424,8 @@ if __name__ == "__main__":
 
     #g.contract((0,2))
     #g.Karger_cut()
-    #g.StoerWagner()
-    print(g.KargerStein())
+    print(g.StoerWagner())
+    #print(g.KargerStein())
     # print(g.adj_mat)
     # print(g.E)
 
