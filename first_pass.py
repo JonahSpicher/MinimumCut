@@ -264,7 +264,9 @@ class Graph: #Undirected, but can be a multigraph
 
         # Initialize A to a random vertex (or just to 0)
 
-        a = random.choice(V)
+        a = 0
+
+        #a = random.choice(V)
 
         A = [a]
 
@@ -272,9 +274,12 @@ class Graph: #Undirected, but can be a multigraph
 
         currentMinimumCut = 0
 
-        if len(A) <= (len(V)):
+        while len(A) <= (len(V)):
+            #print(len(A))
+            #print(len(V))
 
-            currentVertex = A[len(A) - 1]
+            currentVertex = A[len(A)-1]
+            #print(currentVertex)
 
 
             summedRow = 0    # Represents a single value that will be the result of adding every value in the row
@@ -289,18 +294,23 @@ class Graph: #Undirected, but can be a multigraph
                                                                                    # but is connected to the current vertex
 
                         summedRow = summedRow + c.adj_mat[i][j]                    # Summed row = each column value added to the previous
-                if summedRow > comparedRow:                                # If the value for the whole row is larger than the previous value (and not A)
-                      comparedRow = summedRow                              # It replaces the current largest value
-                      comparedRow = i                                      # Creating an index for the tightest row.
-                      summedRow = 0
+                        #print(summedRow)
+                    if summedRow > comparedRow:                              # If the value for the whole row is larger than the previous value (and not A)
+                        comparedRow = summedRow                              # It replaces the current largest value
+                        comparedRow = i                                      # Creating an index for the tightest row.
+                        summedRow = 0
+                        #print(comparedRow)
 
             # The next tightest vertex will be the i for which the row has the largest sum
 
             nextTightestVertex = comparedRow
+            #print(nextTightestVertex)
 
             # Add the new vertex to the list A
 
             A.append(nextTightestVertex)
+            #print(A)
+            #print(len(A))
 
             # Set the current index to be the last value in A (-1 because it indexes from 0)
 
@@ -310,10 +320,14 @@ class Graph: #Undirected, but can be a multigraph
             # The tightest will be the last value of A and the second tightest will be the one before
 
             edge = (A[currentIndex-1], A[currentIndex])
+            #print(edge)
 
             # Contract the edge associated with the two tightest vertices
 
             cutOfPhase = c.contract(edge)
+            #print(cutOfPhase)
+
+            #print(c.E)
 
             # Initialize the sum of the edges cut (the cut itself)
 
@@ -330,21 +344,25 @@ class Graph: #Undirected, but can be a multigraph
                     #print(self.E[i])
             #print("For a total of %s edges" % sum)
             return sum
-            print(sum)
+            #print(sum)
 
             # First, we create a variable representing minimum cut and set it to 0
 
             currentMinimumCut = 5
+
+            #print(currentMinimumCut)
 
             # Then we use a while loop that runs as long as the function does and perform Stoer-Wagner.
 
             # This means comparing the current minimum cut and storing cut of phase as the current minimum cut if
             # it is smaller.
 
-            # if V > 1:
+            while V > 1:
 
-            if sum < currentMinimumCut:
-                currentMinimumCut = sum
+                if sum < currentMinimumCut:
+                    currentMinimumCut = sum
+
+            #print(sum)
 
 
     def KargerStein(self):
