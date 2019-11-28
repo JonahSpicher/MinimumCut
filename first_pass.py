@@ -1,4 +1,6 @@
 import random
+import math
+import copy
 # TODO: Stoer Wagner
 
 class Graph: #Undirected, but can be a multigraph
@@ -345,6 +347,57 @@ class Graph: #Undirected, but can be a multigraph
                 currentMinimumCut = sum
 
 
+    def KargerStein(self):
+        # Make copies to avoid changing original
+        j = copy.deepcopy(self)
+        k = copy.deepcopy(self)
+        # Define n
+        n_j = len(j.adj_mat)
+        n_k = len(k.adj_mat)
+        # Now contract edges
+        while len(j.adj_mat) >= math.ceil((n_j/math.sqrt(2))):
+            edge_j = (-1,-1)
+            while edge_j == (-1,-1):
+                edge_j = (random.choice(j.E))
+            j.contract(edge_j)
+        while len(k.adj_mat) >= math.ceil((n_k/math.sqrt(2))):
+            edge_k = (-1,-1)
+            while edge_k == (-1,-1):
+                edge_k = (random.choice(k.E))
+            k.contract(edge_k)
+        # Initialize sums
+        j_sum = 0
+        k_sum = 0
+        # Either count sum, or call Karger Stein recursively
+        if len(j.adj_mat) == 2:
+            for i in range(len(j.E)):
+                if j.E[i] == (-1,-1):
+                    pass
+                else:
+                    j_sum += 1
+        elif 2 < len(j.adj_mat) < math.ceil((n_j/math.sqrt(2))+1):
+            p = copy.deepcopy(j)
+            j_sum = p.KargerStein()
+        else:
+            pass
+        if len(k.adj_mat) == 2:
+            for i in range(len(k.E)):
+                if k.E[i] == (-1,-1):
+                    pass
+                else:
+                    k_sum += 1
+
+        elif 2 < len(k.adj_mat) < math.ceil((n_j/math.sqrt(2))+1):
+            q = copy.deepcopy(k)
+            k_sum = q.KargerStein()
+        else:
+            pass
+        # Return the smallest number of cuts
+        if j_sum < k_sum:
+            return j_sum
+        else:
+            return k_sum
+
 
 if __name__ == "__main__":
     test_mat = [[0, 1, 1, 1, 1],
@@ -371,7 +424,8 @@ if __name__ == "__main__":
 
     #g.contract((0,2))
     #g.Karger_cut()
-    g.StoerWagner()
+    #g.StoerWagner()
+    print(g.KargerStein())
     # print(g.adj_mat)
     # print(g.E)
 
