@@ -254,7 +254,6 @@ class Graph: #Undirected, but can be a multigraph
 
         c = copy.deepcopy(self)
 
-
         # Initialize V (the number of vertices we're dealing with)
 
         V = []
@@ -270,92 +269,86 @@ class Graph: #Undirected, but can be a multigraph
 
         # I combined the phase and StoerWagner because it was easier, so this is the currentMinimumCut
 
-        print('Edges Before', c.E)
+        #print('Edges Before', c.E)
 
-        if (len(A) - 1) < (len(V) - 1):
+        while (len(A) - 1) < (len(V) - 1) and len(c.adj_mat) >= 3:
+
 
             currentVertex = A[len(A)- 1]
 
-            sum = 0
+            summed = 0
             summedRow = 0    # Represents a single value that will be the result of adding every value in the row
             comparedRow = 0  # The largest value summed row value in the adjacency matrix
             nextTightestVertex = 0
 
             # Sum a row and compare it to a variable that stores the previous largest value
-
             for i in range(len(c.adj_mat)):                                       # Index through all rows in the adjacency matrix
                 for j in range(len(c.adj_mat)):                                   # Index through all columns in the adjacency matrix
 
                     if i != currentVertex and c.adj_mat[i][currentVertex] >= 1:   # Make sure the row considered is not the current vertex,
                                                                                   # but is connected to the current vertex
 
-                        sum = sum + c.adj_mat[i][j]                               # Summed row = each column value added to the previous
-                summedRow = sum
-                sum = 0
+                        summed = summed + c.adj_mat[i][j]                               # Summed row = each column value added to the previous
+                summedRow = summed
+                summed = 0
                 if summedRow > comparedRow:                                       # If the value for the whole row is larger than the previous value (and not A)
                      comparedRow = summedRow                                      # It replaces the current largest value
                      nextTightestVertex = i                                       # Creating an index for the tightest row.
                      summedRow = 0
 
-            print(nextTightestVertex)
-
             # The next tightest vertex will be the i for which the row has the largest sum
             # Add the new vertex to the list A
 
-            #A.append(nextTightestVertex)
-            # print('Next Tightest Vertex', nextTightestVertex)
+            A.append(nextTightestVertex)
+            #print('Next Tightest Vertex', nextTightestVertex)
             #print('Current A', A)
 
             # Set the current index to be the last value in A (-1 because it indexes from 0)
 
-            #currentIndex = len(A) - 1
+            currentIndex = len(A) - 1
 
             # Set the edge to be the edge between the two tightest vertices
             # The tightest will be the last value of A and the second tightest will be the one before
 
-            #edge = (A[currentIndex-1], A[currentIndex])
-            #print(edge)
+            edge = (A[currentIndex-1], A[currentIndex])
+            #print("Edge", edge)
 
-
-            #print('New Edges', c.E)
             # Contract the edge associated with the two tightest vertices
+            print(len(c.adj_mat))
+            cutOfPhase = c.contract(edge)
 
-            #cutOfPhase = c.contract(edge)
-            #print(cutOfPhase)
-            #print('adj_mat', c.adj_mat)
-            #print('Edges', c.E)
+            #print(len(c.adj_mat))
+            print('adj_mat', c.adj_mat)
+            print('New Edges', c.E)
 
             # Initialize the sum of the edges cut (the cut itself)
 
-            # sum = 0
+            sum = 0
 
             # Index through all of the edges and skip over any edges that are contracted
             # Else add it to the sum (as a part of the cut)
 
             # First, we create a variable representing minimum cut and set it to 0
 
-            # currentMinimumCut = 100
-            #print(currentMinimumCut)
+            currentMinimumCut = 100
 
             # Then we use a while loop that runs as long as the function does and perform Stoer-Wagner.
 
             # This means comparing the current minimum cut and storing cut of phase as the current minimum cut if
             # it is smaller.
 
-            # for i in range(len(c.E)):
-            #     if c.E[i] == (-1, -1):
-            #         pass
-            #     else:
-            #         sum += 1
+            for i in range(len(c.E)):
+                if c.E[i] == (-1, -1):
+                    pass
+                else:
+                    sum += 1
                     #print(c.E[i])
-            #print("For a total of %s edges" % sum)
-            # return sum
-            #print(sum)
+                    #print(sum)
 
-
-            # if sum < currentMinimumCut:
-            #     currentMinimumCut = sum
-            #print(sum)
+            if sum < currentMinimumCut:
+                currentMinimumCut = sum
+        print("For a total of %s edges % sum")
+        return sum
 
     def KargerStein(self):
         # Make copies to avoid changing original
