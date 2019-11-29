@@ -5,12 +5,12 @@ import copy
 
 class Graph: #Undirected, but can be a multigraph
 
-    def __init__(self, VEW=None, adj_mat=None):
+    def __init__(self, VEW=None, adj_mat=[]):
 
         #Format for VE initialization: V is number of vertices, E is list of edges: (v_i, v_j) connects v_i to v_j
         #So for example K_4 would be written (4, [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)])
 
-        if VEW == None and adj_mat == None: #If both the VEW matrix and adjacency matrix are empty
+        if VEW == None and adj_mat == []: #If both the VEW matrix and adjacency matrix are empty
                                             #create an empty adjacency array, edge array, and weight array
 
            # Initialize the adjacency array as a blank array
@@ -43,9 +43,9 @@ class Graph: #Undirected, but can be a multigraph
                         self.W.append(0)                  # Add a 0 to W as a placeholder for the edge weight
 
                         # Index through every edge using end cap vertices
-
-                        for k in range(self.adj_mat[i][j]):
-                            self.W[-1] += 1 # Adding 1 to every previous weight to make current
+                        self.W[-1] = self.adj_mat[i][j]
+                        # for k in range(self.adj_mat[i][j]):
+                        #     self.W[-1] += 1 # Adding 1 to every previous weight to make current
 
 
         elif adj_mat == None:

@@ -7,10 +7,15 @@ from first_pass import Graph
 
 def im_to_graph(filename, sig_R, sig_W):
     #First, initialize matrix of the right size
-    im = sp.imread(filename, mode='RGB')
+    #im = sp.imread(filename, mode='RGB')
+
+    #Temporary testing setup
+    im = [[[0,0,0],[0,0,0],[0,0,0]],
+         [[255,255,255],[0,0,0],[255,0,0]],
+         [[255,255,255],[255,0,0],[255,0,0]]]
     adj_mat = np.zeros(((2 + len(im) * len(im[0])), (2 + len(im) * len(im[0]))))
-    print(len(adj_mat), len(adj_mat[0]))
-    print(adj_mat)
+    #print(len(adj_mat), len(adj_mat[0]))
+    #print(adj_mat)
 
     # Next add weights I guess
 
@@ -18,35 +23,40 @@ def im_to_graph(filename, sig_R, sig_W):
         for j in range(len(im[0])):
             #v is current pixel values, r, g, b
             v = im[i][j]
-            #Corresponding position in adj_mat: (i-1)*len(im[0]) + j
+            #Corresponding position in adj_mat: (i)*len(im[0]) + j (because its number of rows in the image * number of pixels in a row plus number of pixels through the current row)
             loc = (i)*len(im[0]) + j
+
+
+
+
             #Assign weights for all adjacent vertices (if not already assigned), so thats from vertex (i,j) to (i+1,j), (i-1,j), (i,j+1), and (i,j-1)
             #Write to adj_mat[loc][loc_v2], adj_mat[loc_v2][loc], where loc_v2 is the same equation as loc but with new vertex values plugged in
             #equation: W_v1,v2 = e^(-((r(v1,v2)/sigma_R))) * e^(-((||w(v1)-w(v2)||^2)/(sigma_W)))
 
+            #This part assigns weights by looking at adjacent pixels
             if i < len(im)-1:
-                W1 = np.exp(-(1/sig_R))*np.exp(-(np.linalg.norm((np.array(v)-np.array(im[i+1,j])))**2)/(sig_W))
+                W1 = np.exp(-(1/sig_R))*np.exp(-(np.linalg.norm((np.array(v)-np.array(im[i+1][j])))**2)/(sig_W))
                 #Other weight1 stuff
                 loc1 = (i+1)*len(im[0]) + j
                 if adj_mat[loc][loc1] == 0:
                     adj_mat[loc][loc1] = W1
                     adj_mat[loc1][loc] = W1
             if i > 0:
-                W2 = np.exp(-(1/sig_R))*np.exp(-(np.linalg.norm((np.array(v)-np.array(im[i-1,j])))**2)/(sig_W))
+                W2 = np.exp(-(1/sig_R))*np.exp(-(np.linalg.norm((np.array(v)-np.array(im[i-1][j])))**2)/(sig_W))
                 #Other weight2 stuff
                 loc2 = (i-1)*len(im[0]) + j
                 if adj_mat[loc][loc2] == 0:
                     adj_mat[loc][loc2] = W2
                     adj_mat[loc2][loc] = W2
             if j < len(im[0]) - 1:
-                W3 = np.exp(-(1/sig_R))*np.exp(-(np.linalg.norm((np.array(v)-np.array(im[i,j+1])))**2)/(sig_W))
+                W3 = np.exp(-(1/sig_R))*np.exp(-(np.linalg.norm((np.array(v)-np.array(im[i][j+1])))**2)/(sig_W))
                 #Other weight3 stuff
                 loc3 = (i)*len(im[0]) + j+1
                 if adj_mat[loc][loc3] == 0:
                     adj_mat[loc][loc3] = W3
                     adj_mat[loc3][loc] = W3
             if j > 0:
-                W4 = np.exp(-(1/sig_R))*np.exp(-(np.linalg.norm((np.array(v)-np.array(im[i,j-1])))**2)/(sig_W))
+                W4 = np.exp(-(1/sig_R))*np.exp(-(np.linalg.norm((np.array(v)-np.array(im[i][j-1])))**2)/(sig_W))
                 #Other weight4 stuff
                 loc4 = (i)*len(im[0]) + j-1
                 if adj_mat[loc][loc4] == 0:
@@ -65,8 +75,21 @@ def im_to_graph(filename, sig_R, sig_W):
 
 
     #Now just initialize the graph
-    g = Graph(adj_mat=adj_mat)
-    return g 
+    g = Graph(adj_mat=(adj_mat.tolist()))
+    return g
 
+if __name__ == "__main__":
 
-im_to_graph("../test.jpg", 1, 1)
+    #Generate new graph
+    g = im_to_graph("test.png", 1, 1)
+    np.save("test_adj_mat.npy", np.array(g.adj_mat))
+
+    #Use pre-saved graph (saves time, though...)
+    # loaded_adj_mat = np.load("test_adj_mat.npy")
+    # g = Graph(adj_mat=loaded_adj_mat.tolist())
+
+    print("Graph initialized.")
+    print(np.array(g.adj_mat))
+    min_cut = g.Karger_cut()
+    #min_cut = g.KargerStein()
+    print(min_cut)
