@@ -245,8 +245,7 @@ class Graph: #Undirected, but can be a multigraph
     # The goal of Stoer-Wagner: do all the cuts, when new_cut is less than best_cut, reset best_cut
         #return best_cut
 
-    def StoerWagner(self, a = 1):
-
+    def StoerWagner(self):
     ## TODO: # Might have to look at the behavior for the first time step. It seems like from the paper that regardless of starting point,
     #          it winds up going to the tightest connected vertex immediately.
 
@@ -254,6 +253,7 @@ class Graph: #Undirected, but can be a multigraph
     #established
 
         c = copy.deepcopy(self)
+
 
         # Initialize V (the number of vertices we're dealing with)
 
@@ -266,20 +266,24 @@ class Graph: #Undirected, but can be a multigraph
 
         a = 0
 
-        #a = random.choice(V)
-
-        A = [a]
+        A = [random.choice(V)]
 
         # I combined the phase and StoerWagner because it was easier, so this is the currentMinimumCut
 
         currentMinimumCut = 0
 
-        while len(A) <= (len(V)):
-            #print(len(A))
+        while len(A) < (len(V)):
+            #print("Initial parameters")
+            #print("Edge")
+            #print(c.E)
+            #print("A")
+            #print(A)
+            #print("Vertices")
             #print(len(V))
 
-            currentVertex = A[len(A)-1]
-            #print(currentVertex)
+            currentVertex = A[len(A)- 1]
+            print("Current vertex")
+            print(currentVertex)
 
 
             summedRow = 0    # Represents a single value that will be the result of adding every value in the row
@@ -287,47 +291,53 @@ class Graph: #Undirected, but can be a multigraph
 
             # Sum a row and compare it to a variable that stores the previous largest value
 
-            for i in range(len(c.adj_mat)):                                        # Index through all rows in the adjacency matrix
-                for j in range(len(c.adj_mat)):                                    # Index through all columns in the adjacency matrix
+            print(c.adj_mat)
 
-                    if i != currentVertex and c.adj_mat[i][currentVertex] >= 1:    # Make sure the row considered is not the current vertex,
-                                                                                   # but is connected to the current vertex
+            for i in range(len(c.adj_mat)):                                     # Index through all rows in the adjacency matrix
+                for j in range(len(c.adj_mat)):  #c.adj_mat[i][currentVertex] == 1  # Index through all columns in the adjacency matrix
 
-                        summedRow = summedRow + c.adj_mat[i][j]                    # Summed row = each column value added to the previous
-                        #print(summedRow)
-                    if summedRow > comparedRow:                              # If the value for the whole row is larger than the previous value (and not A)
-                        comparedRow = summedRow                              # It replaces the current largest value
-                        comparedRow = i                                      # Creating an index for the tightest row.
+                    if i != currentVertex: # Make sure the row considered is not the current vertex,
+                                                                                # but is connected to the current vertex
+
+                        summedRow = summedRow + c.adj_mat[i][j]                 # Summed row = each column value added to the previous
+                    if summedRow > comparedRow:                                 # If the value for the whole row is larger than the previous value (and not A)
+                        comparedRow = summedRow                                 # It replaces the current largest value
+                        nextTightestVertex = i                                  # Creating an index for the tightest row.
                         summedRow = 0
-                        #print(comparedRow)
+
+            print("Compared Row")
+            print(comparedRow)
 
             # The next tightest vertex will be the i for which the row has the largest sum
-
-            nextTightestVertex = comparedRow
-            #print(nextTightestVertex)
-
             # Add the new vertex to the list A
 
             A.append(nextTightestVertex)
-            #print(A)
-            #print(len(A))
+
+            print("New A")
+            print(A)
 
             # Set the current index to be the last value in A (-1 because it indexes from 0)
 
             currentIndex = len(A) - 1
+            print("Current Index")
+            print(currentIndex)
 
             # Set the edge to be the edge between the two tightest vertices
             # The tightest will be the last value of A and the second tightest will be the one before
 
             edge = (A[currentIndex-1], A[currentIndex])
-            #print(edge)
+            print("Edge")
+            print(edge)
 
             # Contract the edge associated with the two tightest vertices
 
             cutOfPhase = c.contract(edge)
             #print(cutOfPhase)
 
-            #print(c.E)
+            print("Edges now")
+
+            print(c.E)
+            print(c.adj_mat)
 
             # Initialize the sum of the edges cut (the cut itself)
 
@@ -341,15 +351,14 @@ class Graph: #Undirected, but can be a multigraph
                     pass
                 else:
                     sum += 1
-                    #print(self.E[i])
+                    print(c.E[i])
             #print("For a total of %s edges" % sum)
             return sum
             #print(sum)
 
             # First, we create a variable representing minimum cut and set it to 0
 
-            currentMinimumCut = 5
-
+            currentMinimumCut = 100
             #print(currentMinimumCut)
 
             # Then we use a while loop that runs as long as the function does and perform Stoer-Wagner.
@@ -357,10 +366,8 @@ class Graph: #Undirected, but can be a multigraph
             # This means comparing the current minimum cut and storing cut of phase as the current minimum cut if
             # it is smaller.
 
-            while V > 1:
-
-                if sum < currentMinimumCut:
-                    currentMinimumCut = sum
+            if sum < currentMinimumCut:
+                currentMinimumCut = sum
 
             #print(sum)
 
