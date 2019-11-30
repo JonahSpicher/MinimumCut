@@ -269,67 +269,75 @@ class Graph: #Undirected, but can be a multigraph
 
         # I combined the phase and StoerWagner because it was easier, so this is the currentMinimumCut
 
-        print('Edges Before', c.E)
+        #print('Edges Before', c.E)
+
+        # Stoer Wagner runs as long as the number of values in A (length of A - 1, think spaces between sticks with sticks being the commas in the array)
+        # and the number of values in V (V - 1 for the same reason) as well as when the length of the adjacency matrix is greater than or equal to three
+
+        # Interestingly the length of the adjacency matrix being = to three is representative of there being only two vertices due to the way we set up
+        # the adjacency matrix
 
         while (len(A) - 1) < (len(V) - 1) and len(c.adj_mat) >= 3:
 
+            # We set the current vertex to be the last value in A by putting the number of values in A in as the index
+
             currentVertex = A[len(A)- 1]
 
-            #print(c.adj_mat[4][currentVertex])
+            # We then set up dummy variables that will later be used in the calculation
 
             intersectVertex = 0      # Represents a single value that will be the result of adding every value in the row
             largestIntersect = 0     # The largest value summed row value in the adjacency matrix
-            tightestWithCurrent = 0  #
+            tightestWithCurrent = 0  # Represents the vertex most tightly connected to the current vertex
 
+            # We finds the vertex most tightly connected with the current using the following for loop with if statements
 
-            # Sum a row and compare it to a variable that stores the previous largest value
+            for i in range(len(c.adj_mat)):                       # We index through all of the rows
+                if i != currentVertex:                            # We skipping the row that represents the current vertex
 
-            for i in range(len(c.adj_mat)):                       # Index through all rows in the adjacency matrix
-                if i != currentVertex:
-                    intersectVertex = c.adj_mat[i][currentVertex] # The value representing how tightly connected another vertex is to the current
-                if intersectVertex > largestIntersect:            # If the value representing the intersection with A is larger than the previous
-                    largestIntersect = intersectVertex            # It replaces the current largest value
-                    tightestWithCurrent = i                       # Creating an index for the tightest row.)
+                    intersectVertex = c.adj_mat[i][currentVertex] # We record the intersection between the currentVertex and all others as the value of each row
+                                                                  # in the current vertex's column except the row that represents the current vertex
 
-            # The next tightest vertex will be the i for which the row has the largest sum
-            # Add the new vertex to the list A
+                if intersectVertex > largestIntersect:            # We see if the value representing the intersection with current vertex is larger than the previous
+                    largestIntersect = intersectVertex            # If the value is larger we replace the current largest value with it
+                    tightestWithCurrent = i                       # We record the index for the vertex most tightly connected as the current vertex
+
+            # The next most tightly connected (to current) vertex will be the largest value in the current vertex column that isn't representative of the vertex itself
+
+            # We add the most tightly connected vertex to the list A
 
             A.append(tightestWithCurrent)
             print('Next Tightest Vertex', tightestWithCurrent)
             print('Current A', A)
 
-            # Set the current index to be the last value in A (-1 because it indexes from 0)
+            # We set the index of the last value in A (-1 because it indexes from 0)
 
             currentIndex = len(A) - 1
 
-            # Set the edge to be the edge between the two tightest vertices
-            # The tightest will be the last value of A and the second tightest will be the one before
+            # We set the edge to be the edge between the current vertex and the one most tightly connected to the current vertex
+            # The vertex most tightly connected to the current will be the last value of A and the current vertex will be the one before it
 
             edge = (A[currentIndex-1], A[currentIndex])
             print("Edge", edge)
 
-            # Contract the edge associated with the two tightest vertices
+            # We contract the edge associated with the current vertex and the one most tightly connected to it
             cutOfPhase = c.contract(edge)
 
             print(len(c.adj_mat))
             print('adj_mat', c.adj_mat)
             print('New Edges', c.E)
 
-            # Initialize the sum of the edges cut (the cut itself)
+            # We initialize the sum of the edges cut (the cut itself)
 
             sum = 0
 
-            # Index through all of the edges and skip over any edges that are contracted
-            # Else add it to the sum (as a part of the cut)
+            # We index through all of the edges and skip over any edges that are contracted
+            # If an edge is not contracted, we add it to the sum (as a part of the cut)
 
-            # First, we create a variable representing minimum cut and set it to 0
+            # We create a variable representing minimum cut and set it to 100 (so there is never a cut initially larger)
 
             currentMinimumCut = 100
 
-            # Then we use a while loop that runs as long as the function does and perform Stoer-Wagner.
-
-            # This means comparing the current minimum cut and storing cut of phase as the current minimum cut if
-            # it is smaller.
+            # Then we index through the value, skipping the contracted edges and making a sum = to the cut
 
             for i in range(len(c.E)):
                 if c.E[i] == (-1, -1):
@@ -339,62 +347,67 @@ class Graph: #Undirected, but can be a multigraph
                     #print(c.E[i])
                     #print(sum)
 
+            # Then we compare the current minimum cut and store the cut of phase if it is smaller
+
             if sum < currentMinimumCut:
                 currentMinimumCut = sum
+
+        # Finally, we return the final sum that results from the above calculation and comparison
+        # It will be the minimum cut
 
         print("For a total of %s edges % sum")
         return sum
 
-    # def KargerStein(self):
-    #     # Make copies to avoid changing original
-    #     j = copy.deepcopy(self)
-    #     k = copy.deepcopy(self)
-    #     # Define n
-    #     n_j = len(j.adj_mat)
-    #     n_k = len(k.adj_mat)
-    #     # Now contract edges
-    #     while len(j.adj_mat) >= math.ceil((n_j/math.sqrt(2))):
-    #         edge_j = (-1,-1)
-    #         while edge_j == (-1,-1):
-    #             edge_j = (random.choice(j.E))
-    #         j.contract(edge_j)
-    #     while len(k.adj_mat) >= math.ceil((n_k/math.sqrt(2))):
-    #         edge_k = (-1,-1)
-    #         while edge_k == (-1,-1):
-    #             edge_k = (random.choice(k.E))
-    #         k.contract(edge_k)
-    #     # Initialize sums
-    #     j_sum = 0
-    #     k_sum = 0
-    #     # Either count sum, or call Karger Stein recursively
-    #     if len(j.adj_mat) == 2:
-    #         for i in range(len(j.E)):
-    #             if j.E[i] == (-1,-1):
-    #                 pass
-    #             else:
-    #                 j_sum += 1
-    #     elif 2 < len(j.adj_mat) < math.ceil((n_j/math.sqrt(2))+1):
-    #         p = copy.deepcopy(j)
-    #         j_sum = p.KargerStein()
-    #     else:
-    #         pass
-    #     if len(k.adj_mat) == 2:
-    #         for i in range(len(k.E)):
-    #             if k.E[i] == (-1,-1):
-    #                 pass
-    #             else:
-    #                 k_sum += 1
-    #
-    #     elif 2 < len(k.adj_mat) < math.ceil((n_j/math.sqrt(2))+1):
-    #         q = copy.deepcopy(k)
-    #         k_sum = q.KargerStein()
-    #     else:
-    #         pass
-    #     # Return the smallest number of cuts
-    #     if j_sum < k_sum:
-    #         return j_sum
-    #     else:
-    #         return k_sum
+    def KargerStein(self):
+        # Make copies to avoid changing original
+        j = copy.deepcopy(self)
+        k = copy.deepcopy(self)
+        # Define n
+        n_j = len(j.adj_mat)
+        n_k = len(k.adj_mat)
+        # Now contract edges
+        while len(j.adj_mat) >= math.ceil((n_j/math.sqrt(2))):
+            edge_j = (-1,-1)
+            while edge_j == (-1,-1):
+                edge_j = (random.choice(j.E))
+            j.contract(edge_j)
+        while len(k.adj_mat) >= math.ceil((n_k/math.sqrt(2))):
+            edge_k = (-1,-1)
+            while edge_k == (-1,-1):
+                edge_k = (random.choice(k.E))
+            k.contract(edge_k)
+        # Initialize sums
+        j_sum = 0
+        k_sum = 0
+        # Either count sum, or call Karger Stein recursively
+        if len(j.adj_mat) == 2:
+            for i in range(len(j.E)):
+                if j.E[i] == (-1,-1):
+                    pass
+                else:
+                    j_sum += 1
+        elif 2 < len(j.adj_mat) < math.ceil((n_j/math.sqrt(2))+1):
+            p = copy.deepcopy(j)
+            j_sum = p.KargerStein()
+        else:
+            pass
+        if len(k.adj_mat) == 2:
+            for i in range(len(k.E)):
+                if k.E[i] == (-1,-1):
+                    pass
+                else:
+                    k_sum += 1
+
+        elif 2 < len(k.adj_mat) < math.ceil((n_j/math.sqrt(2))+1):
+            q = copy.deepcopy(k)
+            k_sum = q.KargerStein()
+        else:
+            pass
+        # Return the smallest number of cuts
+        if j_sum < k_sum:
+            return j_sum
+        else:
+            return k_sum
 
 
 if __name__ == "__main__":
