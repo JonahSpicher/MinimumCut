@@ -245,21 +245,25 @@ class Graph: #Undirected, but can be a multigraph
     # The goal of Stoer-Wagner: do all the cuts, when new_cut is less than best_cut, reset best_cut
         #return best_cut
 
-    def minimumCutPhase(self, V):
+    def minimumCutPhase(self, g):
     ## TODO: # Might have to look at the behavior for the first time step. It seems like from the paper that regardless of starting point,
     #          it winds up going to the tightest connected vertex immediately.
 
     # First let's initialize a new version of the adjacency matrix so we don't overwrite what we previously
     #established
 
-        #c = copy.deepcopy(self) # Commented out because I think this belongs in StoerWagner
+        c = copy.deepcopy(g) # Commented out because I think this belongs in StoerWagner
+        """ah, sort of. Stoer Wagner does this too, but this modifies the graph StoerWagner is using, so it needs to do it too."""
 
         # Initialize V (the number of vertices we're dealing with)
         # I also decided that this belonged in StoerWagner
+        """Actually, this also belongs here, because there are two different relevant V's, the number of vertices in the full
+        graph and the number currently being looked at"""
 
         # V = []
         # for i in range(0, len(c.adj_mat), 1):
         #     V.append(i)
+        """We don't need this because you only use it to get its length, which we know already"""
 
         # Initialize A to a random vertex (or just to 0)
 
@@ -268,8 +272,6 @@ class Graph: #Undirected, but can be a multigraph
         #A = [random.choice(V)]
         A = [0]
 
-        # I combined the phase and StoerWagner because it was easier, so this is the currentMinimumCut
-
         #print('Edges Before', c.E)
 
         # Stoer Wagner runs as long as the number of values in A (length of A - 1, think spaces between sticks with sticks being the commas in the array)
@@ -277,8 +279,16 @@ class Graph: #Undirected, but can be a multigraph
 
         # Interestingly the length of the adjacency matrix being = to three is representative of there being only two vertices due to the way we set up
         # the adjacency matrix
+        """Umm this is not true, if len(adj_mat) = 3 there are 3 vertices """
 
-        while (len(A) - 1) < (len(V) - 1) and len(c.adj_mat) >= 3:
+
+        """
+        while (len(A) - 1) < (len(V) - 1) and len(c.adj_mat) >= 3: You dont need the >=3, thats a separate thing,
+        and we actually want to stop when we have two vertices because its easier to check things then,
+        so this should be:
+        """
+        while len(A) < len(g.adj_mat) - 1:
+
 
             # We set the current vertex to be the last value in A by putting the number of values in A in as the index
 
@@ -290,8 +300,13 @@ class Graph: #Undirected, but can be a multigraph
             largestIntersect = 0     # The largest value summed row value in the adjacency matrix
             tightestWithCurrent = 0  # Represents the vertex most tightly connected to the current vertex
 
-            # We finds the vertex most tightly connected with the current using the following for loop with if statements
+            # We find the vertex most tightly connected with the current using the following for loop with if statements
 
+            """I don't think this for loop does this, it gets whichever vertex is most tightly connected
+            to the vertex added most recently to A (I think), but we want the one most tightly connected
+            to any vertex in A. Probably the best way to do this is to contract an edge of C every time
+            so that every vertex of g in A is just one vertex in c, but it gets hard (but not impossible)
+            to keep track of vertices because they get renumbered."""
             for i in range(len(c.adj_mat)):                       # We index through all of the rows
                 if i != currentVertex:                            # We skipping the row that represents the current vertex
 
@@ -313,11 +328,16 @@ class Graph: #Undirected, but can be a multigraph
             # We set the index of the last value in A (-1 because it indexes from 0)
 
             currentIndex = len(A) - 1
+            """In python you can do A[-1] to get the last element"""
 
             # We set the edge to be the edge between the current vertex and the one most tightly connected to the current vertex
             # The vertex most tightly connected to the current will be the last value of A and the current vertex will be the one before it
 
             edge = (A[currentIndex-1], A[currentIndex])
+            """So this is equivalent to edge = (A[-2], A[-1]), which would also work, just so you know.
+            But also, this is the wrong edge to contract. You want to contract the A vertex (which is 0),
+            because you initialized A as [0] with the most recent one. So you should write
+            edge = (A[0], A[-1])"""
             print("Edge", edge)
 
             # We contract the edge associated with the current vertex and the one most tightly connected to it
@@ -333,38 +353,60 @@ class Graph: #Undirected, but can be a multigraph
 
         # Once all possible edges have been contracted, we index through the value, skipping the contracted edges and making a sum = to the cut
 
-        for i in range(len(c.E)):
-            if c.E[i] == (-1, -1):
-                pass
-            else:
-                cutOfPhase += 1
+        # for i in range(len(c.E)):
+        #     if c.E[i] == (-1, -1):
+        #         pass
+        #     else:
+        #         cutOfPhase += 1
                 #print(c.E[i])
                 #print(sum)
+        """There aren't any (-1,-1)'s here, because nothing has been cut. Things have been
+        contracted though, so at this point, c has a 2x2 adjacency matrix, so all you have to do is this:"""
+        cutOfPhase = c.adj_mat[0][1]
+        """We want to return A becuase we need to know what partition this cutOfPhase corresponds to,
+        the last two values of A are s and t, where t tells us what vertex (or vertices) we cut off
+        and s and t together tell us what to contract in g."""
+        return cutOfPhase, A
 
-        print("For a total of %s edges % sum")
-        return cutOfPhase
 
     def StoerWagner(self, cutOfPhase):
 
         # Set current minimum cut to something absurdly large so that the cutOfPhase results can replace it
 
         currentMinimumCut = 100
+        best_partition = 0 """Need to find a way to describe partitions, see note below"""
 
         # Create a copy of the adjacency matrix so that we don't change the original
-
-        c = copy.deepcopy(self)
+        """There is a hierarchy here where we dont touch self, we just try to find its minimum cut,
+        g is the graph we contract as shown in the paper, and c is the graph we contract as shown in
+        my notebook. That way they all stay safe, but we can make the edits we need to in order to
+        learn things"""
+        g = copy.deepcopy(self)
 
         # Re-creating the vertex array using method from minimumCutPhase
 
-        V = []
-        for i in range(0, len(c.adj_mat), 1):
-            V.append(i)
+        # V = []
+        # for i in range(0, len(c.adj_mat), 1):
+        #     V.append(i)
+        """Actually dont need this, we just need to count the vertices,
+        don't have to keep track of them in any order or anything"""
 
-        while V > 1:
-            minimumCutPhase(c, V)
+        while len(g.adj_mat) > 1:
+            cutOfPhase, final_A = self.minimumCutPhase(g)
+            """I changed this a little to get the values minimumCutPhase returns"""
 
             if cutOfPhase < currentMinimumCut:
                 currentMinimumCut = cutOfPhase
+                best_partition = final_A[-1]
+                """Need some logic here to figure out what partition in self
+                this vertex of g corresponds to, like what it shows in the paper."""
+
+            """Then we contract and go again on the smaller graph."""
+            g.contract((final_A[-1], final_A[-2]))
+
+        """Finally, just return the best value and what partition of self we got it from"""
+        return currentMinimumCut, best_partition
+
 
 
 
