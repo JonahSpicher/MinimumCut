@@ -7,7 +7,7 @@ from first_pass import Graph
 
 def im_to_graph(filename, sig_R, sig_W):
     #First, initialize matrix of the right size
-    #im = sp.imread(filename, mode='RGB')
+    im = sp.imread(filename, mode='RGB')
 
     #Temporary testing setup
     # im = [[[0,0,0],[0,0,0],[0,0,0]],
@@ -33,18 +33,15 @@ def im_to_graph(filename, sig_R, sig_W):
             #equation: W_v1,v2 = e^(-((r(v1,v2)/sigma_R))) * e^(-((||w(v1)-w(v2)||^2)/(sigma_W)))
 
             #This part assigns weights by looking at adjacent pixels
-            if i < len(im)-1: # Look one below 
+            if i < len(im)-1: # Look one below
                 p1 = np.exp(-(1/sig_R))
                 p2 = -(np.linalg.norm((np.array(v)-np.array(im[i+1][j])))**2)/(sig_W) #Broken up for debugging, not necessary
                 p3 = np.exp(p2)
-                print("second part:", p2)
                 W1 = p1*p3
 
                 #Other weight1 stuff
                 loc1 = (i+1)*len(im[0]) + j
-                if W1 == 0:
-                    print(v, i, j, "one below ")
-                    print("parts:", p1, p2)
+
                 if adj_mat[loc][loc1] == 0:
                     adj_mat[loc][loc1] = W1
                     adj_mat[loc1][loc] = W1
@@ -52,12 +49,9 @@ def im_to_graph(filename, sig_R, sig_W):
 
             if j < len(im[0]) - 1: #Look one to the right
                 W2 = np.exp(-(1/sig_R))*np.exp(-(np.linalg.norm((np.array(v)-np.array(im[i][j+1])))**2)/(sig_W))
-                #print("3:", W2)
                 #Other weight2 stuff
                 loc3 = (i)*len(im[0]) + j+1
-                if W2 == 0:
-                    print(v, i, j, "One right")
-                    pass
+
                 if adj_mat[loc][loc3] == 0:
                     adj_mat[loc][loc3] = W2
                     adj_mat[loc3][loc] = W2

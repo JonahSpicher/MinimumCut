@@ -233,7 +233,7 @@ class Graph: #Undirected, but can be a multigraph
                 sum += 1
                 print(self.E[i])
         print("For a total of %s edges" % sum)
-        return sum
+        return sum, h.E
 
     # The Stoer Wagner algorithm is based on the original paper on the subject
     # (link here: https://www.cs.dartmouth.edu/~ac/Teach/CS105-Winter05/Handouts/stoerwagner-mincut.pdf )
