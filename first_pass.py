@@ -405,9 +405,9 @@ class Graph: #Undirected, but can be a multigraph
             pass
         # Return the smallest number of cuts
         if j_sum < k_sum:
-            return j_sum
+            return j_sum, j.E #I added this, which may or may not be how I should do it, if this is bad feel free to change or let me know
         else:
-            return k_sum
+            return k_sum, k.E
 
 
 if __name__ == "__main__":
