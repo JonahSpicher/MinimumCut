@@ -245,20 +245,21 @@ class Graph: #Undirected, but can be a multigraph
     # The goal of Stoer-Wagner: do all the cuts, when new_cut is less than best_cut, reset best_cut
         #return best_cut
 
-    def StoerWagner(self):
+    def minimumCutPhase(self, V):
     ## TODO: # Might have to look at the behavior for the first time step. It seems like from the paper that regardless of starting point,
     #          it winds up going to the tightest connected vertex immediately.
 
     # First let's initialize a new version of the adjacency matrix so we don't overwrite what we previously
     #established
 
-        c = copy.deepcopy(self)
+        #c = copy.deepcopy(self) # Commented out because I think this belongs in StoerWagner
 
         # Initialize V (the number of vertices we're dealing with)
+        # I also decided that this belonged in StoerWagner
 
-        V = []
-        for i in range(0, len(c.adj_mat), 1):
-            V.append(i)
+        # V = []
+        # for i in range(0, len(c.adj_mat), 1):
+        #     V.append(i)
 
         # Initialize A to a random vertex (or just to 0)
 
@@ -320,43 +321,52 @@ class Graph: #Undirected, but can be a multigraph
             print("Edge", edge)
 
             # We contract the edge associated with the current vertex and the one most tightly connected to it
-            cutOfPhase = c.contract(edge)
+            currentContraction = c.contract(edge)
 
             print(len(c.adj_mat))
             print('adj_mat', c.adj_mat)
             print('New Edges', c.E)
 
-            # We initialize the sum of the edges cut (the cut itself)
+        # We initialize the sum of the edges cut (the cut itself)
 
-            sum = 0
+        sum = 0
 
-            # We index through all of the edges and skip over any edges that are contracted
-            # If an edge is not contracted, we add it to the sum (as a part of the cut)
+        # Once all possible edges have been contracted, we index through the value, skipping the contracted edges and making a sum = to the cut
 
-            # We create a variable representing minimum cut and set it to 100 (so there is never a cut initially larger)
-
-            currentMinimumCut = 100
-
-            # Then we index through the value, skipping the contracted edges and making a sum = to the cut
-
-            for i in range(len(c.E)):
-                if c.E[i] == (-1, -1):
-                    pass
-                else:
-                    sum += 1
-                    #print(c.E[i])
-                    #print(sum)
-
-            # Then we compare the current minimum cut and store the cut of phase if it is smaller
-
-            if sum < currentMinimumCut:
-                currentMinimumCut = sum
-
-        # Finally, we return the final sum that results from the above calculation and comparison
-        # It will be the minimum cut
+        for i in range(len(c.E)):
+            if c.E[i] == (-1, -1):
+                pass
+            else:
+                cutOfPhase += 1
+                #print(c.E[i])
+                #print(sum)
 
         print("For a total of %s edges % sum")
-        return sum
+        return cutOfPhase
+
+    def StoerWagner(self, cutOfPhase):
+
+        # Set current minimum cut to something absurdly large so that the cutOfPhase results can replace it
+
+        currentMinimumCut = 100
+
+        # Create a copy of the adjacency matrix so that we don't change the original
+
+        c = copy.deepcopy(self)
+
+        # Re-creating the vertex array using method from minimumCutPhase
+
+        V = []
+        for i in range(0, len(c.adj_mat), 1):
+            V.append(i)
+
+        while V > 1:
+            minimumCutPhase(c, V)
+
+            if cutOfPhase < currentMinimumCut:
+                currentMinimumCut = cutOfPhase
+
+
 
     def KargerStein(self):
         # Make copies to avoid changing original
