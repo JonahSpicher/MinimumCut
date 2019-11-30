@@ -262,46 +262,41 @@ class Graph: #Undirected, but can be a multigraph
 
         # Initialize A to a random vertex (or just to 0)
 
-        a = 0
+        #a = 0
 
         #A = [random.choice(V)]
         A = [0]
 
         # I combined the phase and StoerWagner because it was easier, so this is the currentMinimumCut
 
-        #print('Edges Before', c.E)
+        print('Edges Before', c.E)
 
         while (len(A) - 1) < (len(V) - 1) and len(c.adj_mat) >= 3:
 
-
             currentVertex = A[len(A)- 1]
 
-            summed = 0
-            summedRow = 0    # Represents a single value that will be the result of adding every value in the row
-            comparedRow = 0  # The largest value summed row value in the adjacency matrix
-            nextTightestVertex = 0
+            #print(c.adj_mat[4][currentVertex])
+
+            intersectVertex = 0      # Represents a single value that will be the result of adding every value in the row
+            largestIntersect = 0     # The largest value summed row value in the adjacency matrix
+            tightestWithCurrent = 0  #
+
 
             # Sum a row and compare it to a variable that stores the previous largest value
-            for i in range(len(c.adj_mat)):                                       # Index through all rows in the adjacency matrix
-                for j in range(len(c.adj_mat)):                                   # Index through all columns in the adjacency matrix
 
-                    if i != currentVertex and c.adj_mat[i][currentVertex] >= 1:   # Make sure the row considered is not the current vertex,
-                                                                                  # but is connected to the current vertex
-
-                        summed = summed + c.adj_mat[i][j]                               # Summed row = each column value added to the previous
-                summedRow = summed
-                summed = 0
-                if summedRow > comparedRow:                                       # If the value for the whole row is larger than the previous value (and not A)
-                     comparedRow = summedRow                                      # It replaces the current largest value
-                     nextTightestVertex = i                                       # Creating an index for the tightest row.
-                     summedRow = 0
+            for i in range(len(c.adj_mat)):                       # Index through all rows in the adjacency matrix
+                if i != currentVertex:
+                    intersectVertex = c.adj_mat[i][currentVertex] # The value representing how tightly connected another vertex is to the current
+                if intersectVertex > largestIntersect:            # If the value representing the intersection with A is larger than the previous
+                    largestIntersect = intersectVertex            # It replaces the current largest value
+                    tightestWithCurrent = i                       # Creating an index for the tightest row.)
 
             # The next tightest vertex will be the i for which the row has the largest sum
             # Add the new vertex to the list A
 
-            A.append(nextTightestVertex)
-            #print('Next Tightest Vertex', nextTightestVertex)
-            #print('Current A', A)
+            A.append(tightestWithCurrent)
+            print('Next Tightest Vertex', tightestWithCurrent)
+            print('Current A', A)
 
             # Set the current index to be the last value in A (-1 because it indexes from 0)
 
@@ -311,13 +306,12 @@ class Graph: #Undirected, but can be a multigraph
             # The tightest will be the last value of A and the second tightest will be the one before
 
             edge = (A[currentIndex-1], A[currentIndex])
-            #print("Edge", edge)
+            print("Edge", edge)
 
             # Contract the edge associated with the two tightest vertices
-            print(len(c.adj_mat))
             cutOfPhase = c.contract(edge)
 
-            #print(len(c.adj_mat))
+            print(len(c.adj_mat))
             print('adj_mat', c.adj_mat)
             print('New Edges', c.E)
 
@@ -347,59 +341,60 @@ class Graph: #Undirected, but can be a multigraph
 
             if sum < currentMinimumCut:
                 currentMinimumCut = sum
+
         print("For a total of %s edges % sum")
         return sum
 
-    def KargerStein(self):
-        # Make copies to avoid changing original
-        j = copy.deepcopy(self)
-        k = copy.deepcopy(self)
-        # Define n
-        n_j = len(j.adj_mat)
-        n_k = len(k.adj_mat)
-        # Now contract edges
-        while len(j.adj_mat) >= math.ceil((n_j/math.sqrt(2))):
-            edge_j = (-1,-1)
-            while edge_j == (-1,-1):
-                edge_j = (random.choice(j.E))
-            j.contract(edge_j)
-        while len(k.adj_mat) >= math.ceil((n_k/math.sqrt(2))):
-            edge_k = (-1,-1)
-            while edge_k == (-1,-1):
-                edge_k = (random.choice(k.E))
-            k.contract(edge_k)
-        # Initialize sums
-        j_sum = 0
-        k_sum = 0
-        # Either count sum, or call Karger Stein recursively
-        if len(j.adj_mat) == 2:
-            for i in range(len(j.E)):
-                if j.E[i] == (-1,-1):
-                    pass
-                else:
-                    j_sum += 1
-        elif 2 < len(j.adj_mat) < math.ceil((n_j/math.sqrt(2))+1):
-            p = copy.deepcopy(j)
-            j_sum = p.KargerStein()
-        else:
-            pass
-        if len(k.adj_mat) == 2:
-            for i in range(len(k.E)):
-                if k.E[i] == (-1,-1):
-                    pass
-                else:
-                    k_sum += 1
-
-        elif 2 < len(k.adj_mat) < math.ceil((n_j/math.sqrt(2))+1):
-            q = copy.deepcopy(k)
-            k_sum = q.KargerStein()
-        else:
-            pass
-        # Return the smallest number of cuts
-        if j_sum < k_sum:
-            return j_sum
-        else:
-            return k_sum
+    # def KargerStein(self):
+    #     # Make copies to avoid changing original
+    #     j = copy.deepcopy(self)
+    #     k = copy.deepcopy(self)
+    #     # Define n
+    #     n_j = len(j.adj_mat)
+    #     n_k = len(k.adj_mat)
+    #     # Now contract edges
+    #     while len(j.adj_mat) >= math.ceil((n_j/math.sqrt(2))):
+    #         edge_j = (-1,-1)
+    #         while edge_j == (-1,-1):
+    #             edge_j = (random.choice(j.E))
+    #         j.contract(edge_j)
+    #     while len(k.adj_mat) >= math.ceil((n_k/math.sqrt(2))):
+    #         edge_k = (-1,-1)
+    #         while edge_k == (-1,-1):
+    #             edge_k = (random.choice(k.E))
+    #         k.contract(edge_k)
+    #     # Initialize sums
+    #     j_sum = 0
+    #     k_sum = 0
+    #     # Either count sum, or call Karger Stein recursively
+    #     if len(j.adj_mat) == 2:
+    #         for i in range(len(j.E)):
+    #             if j.E[i] == (-1,-1):
+    #                 pass
+    #             else:
+    #                 j_sum += 1
+    #     elif 2 < len(j.adj_mat) < math.ceil((n_j/math.sqrt(2))+1):
+    #         p = copy.deepcopy(j)
+    #         j_sum = p.KargerStein()
+    #     else:
+    #         pass
+    #     if len(k.adj_mat) == 2:
+    #         for i in range(len(k.E)):
+    #             if k.E[i] == (-1,-1):
+    #                 pass
+    #             else:
+    #                 k_sum += 1
+    #
+    #     elif 2 < len(k.adj_mat) < math.ceil((n_j/math.sqrt(2))+1):
+    #         q = copy.deepcopy(k)
+    #         k_sum = q.KargerStein()
+    #     else:
+    #         pass
+    #     # Return the smallest number of cuts
+    #     if j_sum < k_sum:
+    #         return j_sum
+    #     else:
+    #         return k_sum
 
 
 if __name__ == "__main__":
