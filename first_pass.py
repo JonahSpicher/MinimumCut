@@ -374,7 +374,8 @@ class Graph: #Undirected, but can be a multigraph
         # Set current minimum cut to something absurdly large so that the cutOfPhase results can replace it
 
         currentMinimumCut = 100
-        best_partition = 0 """Need to find a way to describe partitions, see note below"""
+        best_partition = 0
+        """Need to find a way to describe partitions, see note below"""
 
         # Create a copy of the adjacency matrix so that we don't change the original
         """There is a hierarchy here where we dont touch self, we just try to find its minimum cut,
@@ -410,7 +411,7 @@ class Graph: #Undirected, but can be a multigraph
 
 
 
-    def KargerStein(self):
+    def KargerStein(self,final=True):
         # Make copies to avoid changing original
         j = copy.deepcopy(self)
         k = copy.deepcopy(self)
@@ -431,35 +432,51 @@ class Graph: #Undirected, but can be a multigraph
         # Initialize sums
         j_sum = 0
         k_sum = 0
+        edge_list = []
         # Either count sum, or call Karger Stein recursively
         if len(j.adj_mat) == 2:
+            temp_list = []
             for i in range(len(j.E)):
                 if j.E[i] == (-1,-1):
                     pass
                 else:
                     j_sum += 1
+                    temp_list.append(self.E[i])
+            edge_list.append(j_sum)
+            edge_list.append(j.E)
         elif 2 < len(j.adj_mat) < math.ceil((n_j/math.sqrt(2))+1):
             p = copy.deepcopy(j)
-            j_sum = p.KargerStein()
+            j_sum = p.KargerStein(final=False)
         else:
             pass
         if len(k.adj_mat) == 2:
+            temp_list = []
             for i in range(len(k.E)):
                 if k.E[i] == (-1,-1):
                     pass
                 else:
                     k_sum += 1
-
+                    temp_list.append(self.E[i])
+            edge_list.append(k_sum)
+            edge_list.append(k.E)
         elif 2 < len(k.adj_mat) < math.ceil((n_j/math.sqrt(2))+1):
             q = copy.deepcopy(k)
-            k_sum = q.KargerStein()
+            k_sum = q.KargerStein(final=False)
         else:
             pass
         # Return the smallest number of cuts
         if j_sum < k_sum:
-            return j_sum
+            if final == True:
+                return j_sum
+            else:
+                n = edge_list.index(j_sum)
+                return j_sum, edge_list[n+1]
         else:
-            return k_sum
+            if final == True:
+                return k_sum
+            else:
+                n = edge_list.index(k_sum)
+                return k_sum, edge_list[n+1]
 
 
 if __name__ == "__main__":
@@ -487,7 +504,7 @@ if __name__ == "__main__":
 
     #g.contract((0,2))
     #g.Karger_cut()
-    print(g.StoerWagner())
+    print(g.KargerStein())
     #print(g.KargerStein())
     # print(g.adj_mat)
     # print(g.E)
