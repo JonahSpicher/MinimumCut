@@ -40,12 +40,8 @@ class Graph: #Undirected, but can be a multigraph
                                                           # I and j represent end cap vertices of a particular edge
 
                         self.E.append((i, j))             # Add the vertex ends of the edge as a unit ot the E class
-                        self.W.append(0)                  # Add a 0 to W as a placeholder for the edge weight
+                        self.W.append(self.adj_mat[i][j])                  # Add a 0 to W as a placeholder for the edge weight
 
-                        # Index through every edge using end cap vertices
-                        self.W[-1] = self.adj_mat[i][j]
-                        # for k in range(self.adj_mat[i][j]):
-                        #     self.W[-1] += 1 # Adding 1 to every previous weight to make current
 
 
         elif adj_mat == None:
