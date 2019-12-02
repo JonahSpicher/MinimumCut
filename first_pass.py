@@ -1,6 +1,7 @@
 import random
 import math
 import copy
+import numpy as np
 # TODO: Stoer Wagner
 
 class Graph: #Undirected, but can be a multigraph
@@ -210,7 +211,12 @@ class Graph: #Undirected, but can be a multigraph
         while len(h.adj_mat) > 2:    # While we haven't reached the condition of having two vertices
             edge = (-1,-1)           # Initialize edge to contracted edge condition
             while edge == (-1, -1):  # While contracted edge condition
-                edge = (random.choice(h.E))  # Choose a random edge
+                w = np.array(h.W)
+                w_norm = []
+                for i in range(len(w)):
+                    w_norm.append(float(float(w[i])/np.sum(w)))
+                choice = (np.random.choice(len(h.E),p=w_norm))  # Choose a random edge
+                edge = h.E[choice]
             #print("Contracting edge:", edge)
             h.contract(edge)                 # Contract it
 
@@ -407,72 +413,120 @@ class Graph: #Undirected, but can be a multigraph
 
 
 
-    def KargerStein(self,final=True):
+    # The Karger Stein algorithm is a recursive version of the Karger algorithm
+    # with increased accuracy
+    # Run the Karger algorithm until there are ceil((n/sqrt(2))+1) vertices remaining.
+    # This gives a 50% chance that the contracted edges will lead to the minimum
+    # cut, so we do this twice. Then, we run Karger again on the two partially
+    # contracted graphs and continue doing this recursively until only two
+    # vertices remain.
+    def KargerStein(self):
+
         # Make copies to avoid changing original
         j = copy.deepcopy(self)
         k = copy.deepcopy(self)
+
         # Define n
         n_j = len(j.adj_mat)
         n_k = len(k.adj_mat)
-        # Now contract edges
-        while len(j.adj_mat) >= math.ceil((n_j/math.sqrt(2))):
+
+        # When n <= 6, ceil((n/sqrt(2))+1) = n. So, if n <= 6, the limit will be
+        # ceil((n/sqrt(2))) instead
+
+        # Set j limit
+        if n_j > 6:
+            limit_j = math.ceil((n_j/math.sqrt(2))+1)
+        else:
+            limit_j = math.ceil((n_j/math.sqrt(2)))
+        # Set k limit
+        if n_k > 6:
+            limit_k = math.ceil((n_k/math.sqrt(2))+1)
+        else:
+            limit_k = math.ceil((n_k/math.sqrt(2)))
+
+        # Now contract edges until n < limit
+        # J
+        while len(j.adj_mat) >= limit_j:
             edge_j = (-1,-1)
             while edge_j == (-1,-1):
-                edge_j = (random.choice(j.E))
+                w = np.array(j.W)
+                w_norm = []
+                for i in range(len(w)):
+                    w_norm.append(float(float(w[i])/sum(w)))
+                choice_j = (np.random.choice(len(j.E),p=w_norm))
+                edge_j = j.E[choice_j]
             j.contract(edge_j)
-        while len(k.adj_mat) >= math.ceil((n_k/math.sqrt(2))):
+        # K
+        while len(k.adj_mat) >= limit_k:
             edge_k = (-1,-1)
             while edge_k == (-1,-1):
-                edge_k = (random.choice(k.E))
+                w = np.array(k.W)
+                w_norm = []
+                for i in range(len(w)):
+                    w_norm.append(float(float(w[i])/sum(w)))
+                choice_k = (np.random.choice(len(k.E),p=w_norm))
+                edge_k = k.E[choice_k]
             k.contract(edge_k)
+
         # Initialize sums
         j_sum = 0
         k_sum = 0
+
+        # List where we will store the sum followed by self.E for each possible
+        # minimum cut. At the end, the index of the smallest sum in this list
+        # will be found, and the list self.E immediately following will be
+        # returned along with the sume
         edge_list = []
-        # Either count sum, or call Karger Stein recursively
+
+        # If there are 2 vertices remaining, count sum and append sum and self.E
+        # to edge_list.
+        # if 2 < n < limit, make another copy of the graph, and call Karger Stein
+        # on it
+        # J
         if len(j.adj_mat) == 2:
-            temp_list = []
             for i in range(len(j.E)):
                 if j.E[i] == (-1,-1):
                     pass
                 else:
                     j_sum += 1
-                    temp_list.append(self.E[i])
             edge_list.append(j_sum)
             edge_list.append(j.E)
-        elif 2 < len(j.adj_mat) < math.ceil((n_j/math.sqrt(2))+1):
+        elif 2 < len(j.adj_mat) < limit_j:
             p = copy.deepcopy(j)
-            j_sum = p.KargerStein(final=False)
+            j_res = p.KargerStein()
+            j_sum = j_res[0]
+            j_E = j_res[1]
+            edge_list.append(j_sum)
+            edge_list.append(j_E)
         else:
             pass
+        # K
         if len(k.adj_mat) == 2:
-            temp_list = []
             for i in range(len(k.E)):
                 if k.E[i] == (-1,-1):
                     pass
                 else:
                     k_sum += 1
-                    temp_list.append(self.E[i])
             edge_list.append(k_sum)
             edge_list.append(k.E)
-        elif 2 < len(k.adj_mat) < math.ceil((n_j/math.sqrt(2))+1):
+        elif 2 < len(k.adj_mat) < limit_k:
             q = copy.deepcopy(k)
-            k_sum = q.KargerStein(final=False)
+            k_res = q.KargerStein()
+            k_sum = k_res[0]
+            k_E = k_res[1]
+            edge_list.append(k_sum)
+            edge_list.append(k_E)
         else:
             pass
-        # Return the smallest number of cuts
+
+        # Return the smallest number of cuts and self.E
         if j_sum < k_sum:
-            if final == True:
-                return j_sum
-            else:
-                n = edge_list.index(j_sum)
-                return j_sum, edge_list[n+1]
+            r = edge_list.index(j_sum)
+            return j_sum, edge_list[r+1]
         else:
-            if final == True:
-                return k_sum
-            else:
-                n = edge_list.index(k_sum)
-                return k_sum, edge_list[n+1]
+            s = edge_list.index(k_sum)
+            return k_sum, edge_list[s+1]
+
 
 
 if __name__ == "__main__":
@@ -500,7 +554,7 @@ if __name__ == "__main__":
 
     #g.contract((0,2))
     #g.Karger_cut()
-    print(g.KargerStein())
+    print(g.Karger_cut())
     #print(g.KargerStein())
     # print(g.adj_mat)
     # print(g.E)
