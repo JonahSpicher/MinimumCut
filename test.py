@@ -1,7 +1,6 @@
 import random
 import math
 import copy
-import numpy as np
 # TODO: Stoer Wagner
 
 class Graph: #Undirected, but can be a multigraph
@@ -41,8 +40,12 @@ class Graph: #Undirected, but can be a multigraph
                                                           # I and j represent end cap vertices of a particular edge
 
                         self.E.append((i, j))             # Add the vertex ends of the edge as a unit ot the E class
-                        self.W.append(self.adj_mat[i][j])                  # Add a 0 to W as a placeholder for the edge weight
+                        self.W.append(0)
 
+                        # Index through every edge using end cap vertices
+                        self.W[-1] = self.adj_mat[i][j]
+                        # for k in range(self.adj_mat[i][j]):
+                        #     self.W[-1] += 1 # Adding 1 to every previous weight to make current
 
 
         elif adj_mat == None:
@@ -211,12 +214,7 @@ class Graph: #Undirected, but can be a multigraph
         while len(h.adj_mat) > 2:    # While we haven't reached the condition of having two vertices
             edge = (-1,-1)           # Initialize edge to contracted edge condition
             while edge == (-1, -1):  # While contracted edge condition
-                w = np.array(h.W)
-                w_norm = []
-                for i in range(len(w)):
-                    w_norm.append(float(float(w[i])/np.sum(w)))
-                choice = (np.random.choice(len(h.E),p=w_norm))  # Choose a random edge
-                edge = h.E[choice]
+                edge = (random.choice(h.E))  # Choose a random edge
             #print("Contracting edge:", edge)
             h.contract(edge)                 # Contract it
 
@@ -237,246 +235,149 @@ class Graph: #Undirected, but can be a multigraph
         print("For a total of %s edges" % sum)
         return sum, h.E
 
-    # The Stoer Wagner algorithm is based on the original paper on the subject
-    # (link here: https://www.cs.dartmouth.edu/~ac/Teach/CS105-Winter05/Handouts/stoerwagner-mincut.pdf )
 
-    # In our interpretation self is the graph (G), a is the initial a value,
-    # and w is the weights W
+   # The Stoer Wagner algorithm is based on the original paper on the subject
+   # (link here: https://www.cs.dartmouth.edu/~ac/Teach/CS105-Winter05/Handouts/stoerwagner-mincut.pdf )
 
+    def StoerWagner(self):
 
-    # The goal of Stoer-Wagner: do all the cuts, when new_cut is less than best_cut, reset best_cut
-        #return best_cut
+        c = copy.deepcopy(self)
 
-    def minimumCutPhase(self, g):
+        vertexOrder = []
+        iterateV = [vertexOrder.append(i) for i in range(0, len(c.adj_mat), 1)]
 
-            c = copy.deepcopy(g)
+        contractedIndex = []
+        A = [0]
+        possible_A = 0
+        accumulatePoint = 0
 
-            vertexOrder = []
-            iterateV = [vertexOrder.append(i) for i in range(0, len(c.adj_mat), 1)]
-
-            contractedIndex = []
-            A = [0]
-            possible_A = 0
-            accumulatePoint = 0
-
-            contractedVertex = 0
+        contractedVertex = 0
 
 
-            while len(A) < len(g.adj_mat) - 1:
+        while len(A) < len(self.adj_mat) - 1:
 
-                #First find most tightly connected
-                largestIntersect = [0]
-                for i in range(0, (len(c.adj_mat))):
-                    currentWeight = c.adj_mat[i][contractedVertex]
-                    if i != contractedVertex and currentWeight > largestIntersect[-1]:
-                        largestIntersect.append(currentWeight)
-                        possible_A = i;
-                A.append(vertexOrder.index(possible_A))
-
-
-                for i in range(0, (len(vertexOrder))):
-                    if i > A[-1] and vertexOrder[i] != 0:
-                        vertexOrder[i] -= 1
-                    if i == A[-1]:
-                        vertexOrder[i] = 0
-
-                #Contract the edge
-                print(A)
-                edge = (0, possible_A)
-                c.contract(edge)
-
-            cutOfPhase = c.adj_mat[0][1]
-            A.append(vertexOrder.index(1))
-            return cutOfPhase, A
+            #First find most tightly connected
+            largestIntersect = [0]
+            for i in range(0, (len(c.adj_mat))):
+                currentWeight = c.adj_mat[i][contractedVertex]
+                if i != contractedVertex and currentWeight > largestIntersect[-1]:
+                    largestIntersect.append(currentWeight)
+                    possible_A = i;
+            A.append(vertexOrder.index(possible_A))
 
 
-    def StoerWagner(self, cutOfPhase):
+            for i in range(0, (len(vertexOrder))):
+                if i > A[-1] and vertexOrder[i] != 0:
+                    vertexOrder[i] -= 1
+                if i == A[-1]:
+                    vertexOrder[i] = 0
 
-        # Set current minimum cut to something absurdly large so that the cutOfPhase results can replace it
+            #Contract the edge
+            print(A)
+            edge = (0, possible_A)
+            c.contract(edge)
 
-        currentMinimumCut = 100
-        best_partition = 0
-        """Need to find a way to describe partitions, see note below"""
-
-        # Create a copy of the adjacency matrix so that we don't change the original
-        """There is a hierarchy here where we dont touch self, we just try to find its minimum cut,
-        g is the graph we contract as shown in the paper, and c is the graph we contract as shown in
-        my notebook. That way they all stay safe, but we can make the edits we need to in order to
-        learn things"""
-        g = copy.deepcopy(self)
-
-        # Re-creating the vertex array using method from minimumCutPhase
-
-        # V = []
-        # for i in range(0, len(c.adj_mat), 1):
-        #     V.append(i)
-        """Actually dont need this, we just need to count the vertices,
-        don't have to keep track of them in any order or anything"""
-
-        while len(g.adj_mat) > 1:
-            cutOfPhase, final_A = self.minimumCutPhase(g)
-            """I changed this a little to get the values minimumCutPhase returns"""
-
-            if cutOfPhase < currentMinimumCut:
-                currentMinimumCut = cutOfPhase
-                best_partition = final_A[-1]
-                """Need some logic here to figure out what partition in self
-                this vertex of g corresponds to, like what it shows in the paper."""
-
-            """Then we contract and go again on the smaller graph."""
-            g.contract((final_A[-1], final_A[-2]))
-
-        """Finally, just return the best value and what partition of self we got it from"""
-        return currentMinimumCut, best_partition
+        cutOfPhase = c.adj_mat[0][1]
+        A.append(vertexOrder.index(1))
+        return cutOfPhase, A
 
 
 
 
-    # The Karger Stein algorithm is a recursive version of the Karger algorithm
-    # with increased accuracy
-    # Run the Karger algorithm until there are ceil((n/sqrt(2))+1) vertices remaining.
-    # This gives a 50% chance that the contracted edges will lead to the minimum
-    # cut, so we do this twice. Then, we run Karger again on the two partially
-    # contracted graphs and continue doing this recursively until only two
-    # vertices remain.
-    def KargerStein(self):
-
-        # Make copies to avoid changing original
-        j = copy.deepcopy(self)
-        k = copy.deepcopy(self)
-
-        # Define n
-        n_j = len(j.adj_mat)
-        n_k = len(k.adj_mat)
-
-        # When n <= 6, ceil((n/sqrt(2))+1) = n. So, if n <= 6, the limit will be
-        # ceil((n/sqrt(2))) instead
-
-        # Set j limit
-        if n_j > 6:
-            limit_j = math.ceil((n_j/math.sqrt(2))+1)
-        else:
-            limit_j = math.ceil((n_j/math.sqrt(2)))
-        # Set k limit
-        if n_k > 6:
-            limit_k = math.ceil((n_k/math.sqrt(2))+1)
-        else:
-            limit_k = math.ceil((n_k/math.sqrt(2)))
-
-        # Now contract edges until n < limit
-        # J
-        while len(j.adj_mat) >= limit_j:
-            edge_j = (-1,-1)
-            while edge_j == (-1,-1):
-                w = np.array(j.W)
-                w_norm = []
-                for i in range(len(w)):
-                    w_norm.append(float(float(w[i])/sum(w)))
-                choice_j = (np.random.choice(len(j.E),p=w_norm))
-                edge_j = j.E[choice_j]
-            j.contract(edge_j)
-        # K
-        while len(k.adj_mat) >= limit_k:
-            edge_k = (-1,-1)
-            while edge_k == (-1,-1):
-                w = np.array(k.W)
-                w_norm = []
-                for i in range(len(w)):
-                    w_norm.append(float(float(w[i])/sum(w)))
-                choice_k = (np.random.choice(len(k.E),p=w_norm))
-                edge_k = k.E[choice_k]
-            k.contract(edge_k)
-
-        # Initialize sums
-        j_sum = 0
-        k_sum = 0
-
-        # List where we will store the sum followed by self.E for each possible
-        # minimum cut. At the end, the index of the smallest sum in this list
-        # will be found, and the list self.E immediately following will be
-        # returned along with the sume
-        edge_list = []
-
-        # If there are 2 vertices remaining, count sum and append sum and self.E
-        # to edge_list.
-        # if 2 < n < limit, make another copy of the graph, and call Karger Stein
-        # on it
-        # J
-        if len(j.adj_mat) == 2:
-            for i in range(len(j.E)):
-                if j.E[i] == (-1,-1):
-                    pass
-                else:
-                    j_sum += 1
-            edge_list.append(j_sum)
-            edge_list.append(j.E)
-        elif 2 < len(j.adj_mat) < limit_j:
-            p = copy.deepcopy(j)
-            j_res = p.KargerStein()
-            j_sum = j_res[0]
-            j_E = j_res[1]
-            edge_list.append(j_sum)
-            edge_list.append(j_E)
-        else:
-            pass
-        # K
-        if len(k.adj_mat) == 2:
-            for i in range(len(k.E)):
-                if k.E[i] == (-1,-1):
-                    pass
-                else:
-                    k_sum += 1
-            edge_list.append(k_sum)
-            edge_list.append(k.E)
-        elif 2 < len(k.adj_mat) < limit_k:
-            q = copy.deepcopy(k)
-            k_res = q.KargerStein()
-            k_sum = k_res[0]
-            k_E = k_res[1]
-            edge_list.append(k_sum)
-            edge_list.append(k_E)
-        else:
-            pass
-
-        # Return the smallest number of cuts and self.E
-        if j_sum < k_sum:
-            r = edge_list.index(j_sum)
-            return j_sum, edge_list[r+1]
-        else:
-            s = edge_list.index(k_sum)
-            return k_sum, edge_list[s+1]
 
 
+            ##
+                # accumulatePoint = v1
+                # contractedIndex.append(vertexOrder[v1])
+                # contractedIndex.append(vertexOrder[v2])
+                # vertexOrder.pop(v2)
+
+            ##
+                # contractedIndex.append(vertexOrder[v2])
+                # vertexOrder.pop(v2)
+
+
+    # def KargerStein(self):
+    #    # Make copies to avoid changing original
+    #    j = copy.deepcopy(self)
+    #    k = copy.deepcopy(self)
+    #    # Define n
+    #    n_j = len(j.adj_mat)
+    #    n_k = len(k.adj_mat)
+    #    # Now contract edges
+    #    while len(j.adj_mat) >= math.ceil((n_j/math.sqrt(2))):
+    #        edge_j = (-1,-1)
+    #        while edge_j == (-1,-1):
+    #            edge_j = (random.choice(j.E))
+    #        j.contract(edge_j)
+    #    while len(k.adj_mat) >= math.ceil((n_k/math.sqrt(2))):
+    #        edge_k = (-1,-1)
+    #        while edge_k == (-1,-1)
+    #            edge_k = (random.choice(k.E))
+    #        k.contract(edge_k)
+    #    # Initialize sums
+    #    j_sum = 0
+    #    k_sum = 0
+    #    # Either count sum, or call Karger Stein recursively
+    #    if len(j.adj_mat) == 2:
+    #        for i in range(len(j.E)):
+    #            if j.E[i] == (-1,-1):
+    #                pass
+    #            else:
+    #                j_sum += 1
+    #    elif 2 < len(j.adj_mat) < math.ceil((n_j/math.sqrt(2))+1):
+    #        p = copy.deepcopy(j)
+    #        j_sum = p.KargerStein()
+    #    else:
+    #        pass
+    #    if len(k.adj_mat) == 2:
+    #        for i in range(len(k.E)):
+    #            if k.E[i] == (-1,-1):
+    #                pass
+    #            else:
+    #                k_sum += 1
+    #
+    #    elif 2 < len(k.adj_mat) < math.ceil((n_j/math.sqrt(2))+1):
+    #        q = copy.deepcopy(k)
+    #        k_sum = q.KargerStein()
+    #    else:
+    #        pass
+    #    # Return the smallest number of cuts
+    #    if j_sum < k_sum:
+    #        return j_sum
+    #    else:
+    #        return k_sum
+    #
 
 if __name__ == "__main__":
-    test_mat = [[0, 1, 1, 1, 1],
-                [1, 0, 1, 1, 0],
-                [1, 1, 0, 1, 1],
-                [1, 1, 1, 0, 1],
-                [1, 0, 1, 1, 0]]
-    # test_mat = [[0, 2, 1],
-    #             [2, 0, 0],
-    #             [1, 0, 0]]
-    # V = 9
-    # E = [(0, 1), (0, 2), (0, 3), (0, 4), (0, 7), (1, 2), (1, 4), (1, 8), (2, 4), (2, 5), (5, 4), (5, 8), (8, 4), (8, 7), (7, 4), ()]
-    # V = 3
-    # E = [(0, 1), (0, 2)]
-    # W = [2, 1]
-    g = Graph(adj_mat=test_mat)
-    # print(g.E)
-    # print(g.W)
-    # print(g.adj_mat)
-    # print(g.adj_mat)
+   test_mat = [[0, 3, 1, 5, 2],
+               [3, 0, 0, 0, 4],
+               [1, 0, 0, 4, 2],
+               [5, 0, 4, 0, 2],
+               [2, 4, 2, 2, 0]]
+   # test_mat = [[0, 2, 1],
+   #             [2, 0, 0],
+   #             [1, 0, 0]]
+   # V = 9
+   # E = [(0, 1), (0, 2), (0, 3), (0, 4), (0, 7), (1, 2), (1, 4), (1, 8), (2, 4), (2, 5), (5, 4), (5, 8), (8, 4), (8, 7), (7, 4), ()]
+   # V = 3
+   # E = [(0, 1), (0, 2)]
+   # W = [2, 1]
+   g = Graph(adj_mat=test_mat)
+   # print(g.E)
+   # print(g.W)
+   # print(g.adj_mat)
+   # print(g.adj_mat)
 
-    #print(g.adj_mat)
-    #print(g.E)
+   #print(g.adj_mat)
+   #print(g.E)
 
-    #g.contract((0,2))
-    #g.Karger_cut()
-    print(g.Karger_cut())
-    #print(g.KargerStein())
-    # print(g.adj_mat)
-    # print(g.E)
+   #g.contract((0,2))
+   #g.Karger_cut()
+   print(g.StoerWagner())
+   #print(g.KargerStein())
+   # print(g.adj_mat)
+   # print(g.E)
 
-    # h = Graph(VE=VE_test)
-    # print(h.adj_mat)
+   # h = Graph(VE=VE_test)
+   # print(h.adj_mat)
