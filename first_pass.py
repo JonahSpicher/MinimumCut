@@ -421,14 +421,16 @@ class Graph: #Undirected, but can be a multigraph
     # contracted graphs and continue doing this recursively until only two
     # vertices remain.
     def KargerStein(self):
-
+        print "Karger-Stein"
+        print("beginning")
         # Make copies to avoid changing original
         j = copy.deepcopy(self)
         k = copy.deepcopy(self)
-
+        print("graphs copied")
         # Define n
         n_j = len(j.adj_mat)
         n_k = len(k.adj_mat)
+        print(n_j, n_k)
 
         # When n <= 6, ceil((n/sqrt(2))+1) = n. So, if n <= 6, the limit will be
         # ceil((n/sqrt(2))) instead
@@ -443,10 +445,11 @@ class Graph: #Undirected, but can be a multigraph
             limit_k = math.ceil((n_k/math.sqrt(2))+1)
         else:
             limit_k = math.ceil((n_k/math.sqrt(2)))
-
+        print limit_j, limit_k
         # Now contract edges until n < limit
         # J
         while len(j.adj_mat) >= limit_j:
+            print("while j")
             edge_j = (-1,-1)
             while edge_j == (-1,-1):
                 w = np.array(j.W)
@@ -456,8 +459,10 @@ class Graph: #Undirected, but can be a multigraph
                 choice_j = (np.random.choice(len(j.E),p=w_norm))
                 edge_j = j.E[choice_j]
             j.contract(edge_j)
+            print("contract j")
         # K
         while len(k.adj_mat) >= limit_k:
+            print("while k")
             edge_k = (-1,-1)
             while edge_k == (-1,-1):
                 w = np.array(k.W)
@@ -467,6 +472,7 @@ class Graph: #Undirected, but can be a multigraph
                 choice_k = (np.random.choice(len(k.E),p=w_norm))
                 edge_k = k.E[choice_k]
             k.contract(edge_k)
+            print("contract k")
 
         # Initialize sums
         j_sum = 0
@@ -483,6 +489,7 @@ class Graph: #Undirected, but can be a multigraph
         # if 2 < n < limit, make another copy of the graph, and call Karger Stein
         # on it
         # J
+        print (len(j.adj_mat))
         if len(j.adj_mat) == 2:
             for i in range(len(j.E)):
                 if j.E[i] == (-1,-1):
@@ -494,6 +501,7 @@ class Graph: #Undirected, but can be a multigraph
         elif 2 < len(j.adj_mat) < limit_j:
             p = copy.deepcopy(j)
             j_res = p.KargerStein()
+            print "recursive j"
             j_sum = j_res[0]
             j_E = j_res[1]
             edge_list.append(j_sum)
@@ -501,6 +509,7 @@ class Graph: #Undirected, but can be a multigraph
         else:
             pass
         # K
+        print (len(k.adj_mat))
         if len(k.adj_mat) == 2:
             for i in range(len(k.E)):
                 if k.E[i] == (-1,-1):
@@ -512,6 +521,7 @@ class Graph: #Undirected, but can be a multigraph
         elif 2 < len(k.adj_mat) < limit_k:
             q = copy.deepcopy(k)
             k_res = q.KargerStein()
+            print "recursive k"
             k_sum = k_res[0]
             k_E = k_res[1]
             edge_list.append(k_sum)
@@ -530,11 +540,16 @@ class Graph: #Undirected, but can be a multigraph
 
 
 if __name__ == "__main__":
-    test_mat = [[0, 1, 1, 1, 1],
-                [1, 0, 1, 1, 0],
-                [1, 1, 0, 1, 1],
-                [1, 1, 1, 0, 1],
-                [1, 0, 1, 1, 0]]
+    test_mat = [[0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 0, 1, 1, 0, 1, 1, 1, 1, 1],
+                [1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+                [1, 0, 1, 1, 0, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 0, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 0, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 0]]
     # test_mat = [[0, 2, 1],
     #             [2, 0, 0],
     #             [1, 0, 0]]
@@ -554,7 +569,7 @@ if __name__ == "__main__":
 
     #g.contract((0,2))
     #g.Karger_cut()
-    print(g.Karger_cut())
+    print(g.KargerStein())
     #print(g.KargerStein())
     # print(g.adj_mat)
     # print(g.E)
