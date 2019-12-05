@@ -72,37 +72,81 @@ def im_to_graph(filename, sig_R, sig_W):
     return g
 
 
+def graph_to_im(graph, cut, image, file_extension=''):
+    new_im_f = copy.deepcopy(image)
+    new_im_b = copy.deepcopy(image)
+    for i in range(len(cut[1])):
+        if cut[1][i] == (-1, -1):
+            pass
+        else:
+            edge = g.E[i]
+            g.adj_mat[edge[0]][edge[1]] = 0
+            g.adj_mat[edge[1]][edge[0]] = 0
+    foreground = np.array(copy.deepcopy(g.adj_mat))
+    background = np.array(copy.deepcopy(g.adj_mat))
+    for i in range(len(foreground) - 2):
+        if foreground[i][-2] == 0:
+            foreground[i,:] = 0
+            foreground[:,i] = 0
+        if background[i][-1] == 0:
+            background[i,:] = 0
+            background[:,i] = 0
+
+        x = i % len(im[0])
+        y = i // len(im[0])
+        if sum(foreground[i]) == 0:
+            print("Yeah!")
+            new_im_f[y][x] = (255,0,0)
+
+        if sum(background[i]) == 0:
+            print("Some red")
+            new_im_b[y][x] = (255,0,0)
+
+    sp.imsave('foreground' + file_extension + '.png', new_im_f)
+    sp.imsave('background' + file_extension + '.png', new_im_b)
+
+    # sp.imshow(foreground)
+    # sp.imshow(background)
+
+
+
 
 if __name__ == "__main__":
     # Create results file
     results_file = open("image_graph_test1.txt","w")
-    for i in range(10):
-        # Generate new graph
-        g = im_to_graph("test.png", 10, 1000000)
-        np.save("test_adj_mat.npy", np.array(g.adj_mat))
+    g = im_to_graph("tiny_picture.png", 10, 1000000)
+    im = sp.imread("tiny_picture.png", mode='RGB')
+    np.save("test_adj_mat.npy", np.array(g.adj_mat))
 
-        #Use pre-saved graph (saves time, though...)
-        # loaded_adj_mat = np.load("test_adj_mat.npy")
-        # g = Graph(adj_mat=loaded_adj_mat.tolist())
+    print("Testing Karger Cut Algorithm.")
+    for i in range(1):
 
-        print("Graph initialized.")
+        print("Graph initialized, iteration %s." % i)
         print(np.array(g.adj_mat))
         min_cut = g.Karger_cut()
         #min_cut = g.KargerStein()
         print(min_cut)
         results_file.write(str(min_cut) + "\n")
-    for i in range(10):
-        # Generate new graph
-        g = im_to_graph("test.png", 10, 1000000)
-        np.save("test_adj_mat.npy", np.array(g.adj_mat))
+        graph_to_im(g, min_cut, im, str(i))
 
-        #Use pre-saved graph (saves time, though...)
-        # loaded_adj_mat = np.load("test_adj_mat.npy")
-        # g = Graph(adj_mat=loaded_adj_mat.tolist())
+        #Use pre-saved graph (saves time, though...) for next iteration
+        loaded_adj_mat = np.load("test_adj_mat.npy")
+        g = Graph(adj_mat=loaded_adj_mat.tolist())
 
-        print("Graph initialized.")
-        print(np.array(g.adj_mat))
-        #min_cut = g.Karger_cut()
-        min_cut = g.KargerStein()
-        print(min_cut)
-        results_file.write(str(min_cut) + "\n")
+
+    # print("Testing Karger-Stein Cut Algorithm.")
+    # for i in range(10):
+    #     print("Graph initialized, iteration %s." % i)
+    #
+    #     print("Graph initialized.")
+    #     print(np.array(g.adj_mat))
+    #     #min_cut = g.Karger_cut()
+    #     min_cut = g.KargerStein()
+    #     print(min_cut)
+    #     results_file.write(str(min_cut) + "\n")
+    #
+    #     #Re initatialize for the next iteration
+    #     loaded_adj_mat = np.load("test_adj_mat.npy")
+    #     g = Graph(adj_mat=loaded_adj_mat.tolist())
+
+    results_file.close()

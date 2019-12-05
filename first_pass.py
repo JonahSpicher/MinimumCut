@@ -206,7 +206,7 @@ class Graph: #Undirected, but can be a multigraph
 
     def Karger_cut(self):
         #First make a copy so the original isnt disturbed
-        h = Graph(adj_mat=self.adj_mat)
+        h = copy.deepcopy(self)
         #Now do the cut
         while len(h.adj_mat) > 2:    # While we haven't reached the condition of having two vertices
             edge = (-1,-1)           # Initialize edge to contracted edge condition
