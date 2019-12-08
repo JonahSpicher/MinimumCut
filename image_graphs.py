@@ -87,8 +87,8 @@ def im_to_graph(filename, sig_R, sig_W):
 
             if sum(v) == (255*3): # If the pixel = white
 
-                adj_mat[loc][-1] = 0
-                adj_mat[-1][loc] = 0
+                adj_mat[loc][-1] = 10
+                adj_mat[-1][loc] = 10
 
             elif sum(v) == 0:  # If the pixel = black
 
