@@ -14,8 +14,7 @@ def im_to_graph(filename, sig_R, sig_W):
          [[255,255,255],[0,0,0],[255,255,255]],
          [[255,255,255],[255,255,255],[255,255,255]]]
 
-    im2 = []
-    im = np.zeros(3,3)
+    im2 = np.zeros(3,3)
 
     adj_mat = np.zeros(((2 + len(im) * len(im[0])), (2 + len(im) * len(im[0]))))
     adj_mat2 = np.zeros((2 + len(im) * len(im[0])), (2 + len(im) * len(im[0])))
@@ -64,17 +63,37 @@ def im_to_graph(filename, sig_R, sig_W):
             # From paper, p(v|SIGMA, mu) = sum(1/(sqrt(2pi|SIGMA_i|)) * e^(-0.5((v-mu_i)^T)*(SIGMA_i^-1) *(v-mu_i)))
             #For now, might just make s and t weights 0.5, so that cutting them is not incentivized or discouraged
 
+            # Binary version of the calculation (rough rough draft)
+
+            # if sum(v) == (255*3):
+            #     im2[i][j] = 1
+            # else:
+            #     im2[i][j] = 0
+            #
+            # Have to think about what making the adjacency matrix will look like a decent amount more
+            # this won't really work
+            #
+            # if im[i][j] == 1:
+            #     adj_mat[i][j+1] = (i+j)/2
+            #     adj_mat[i+1][i] = (i+j)/2
+            #     adj_mat[i+1][i+1] = (i+j)/2
+            #
+            # if i == j:
+            #     adj_mat[i][i] = 0
+
+
+
             # Weighting things based on the assumption that things will be black and white
 
             if sum(v) == (255*3): # If the pixel = white
 
-                adj_mat[loc][-1] = 1000
-                adj_mat[-1][loc] = 1000
+                adj_mat[loc][-1] = 0
+                adj_mat[-1][loc] = 0
 
             elif sum(v) == 0:  # If the pixel = black
 
-                adj_mat[loc][-2] = 1000
-                adj_mat[-2][loc] = 1000
+                adj_mat[loc][-2] = 10
+                adj_mat[-2][loc] = 10
 
             # elif sum(v) <= (255) and sum(v) >= 0: # if the pixel = a color (but this is any color)
             #
