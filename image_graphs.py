@@ -7,17 +7,21 @@ from first_pass import Graph
 
 def im_to_graph(filename, sig_R, sig_W):
     #First, initialize matrix of the right size
-    #im = sp.imread(filename, mode='RGB')
+    im = sp.imread(filename, mode='RGB')
 
     #Temporary testing setup
-    im = [[[0,0,0],[0,0,0],[0,0,0]],
-         [[255,255,255],[0,0,0],[255,255,255]],
-         [[255,255,255],[255,255,255],[255,255,255]]]
-
-    im2 = np.zeros(3,3)
+    # im = [[[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+    #       [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+    #       [[0,0,0],[0,0,0],[255, 255, 255],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [255, 255, 255], [0,0,0], [0,0,0]],
+    #       [[0,0,0],[0,0,0],[255, 255, 255],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [255, 255, 255], [0,0,0], [0,0,0]],
+    #       [[0,0,0],[0,0,0],[255, 255, 255],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [255, 255, 255], [0,0,0], [0,0,0]],
+    #       [[255, 255, 255],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [0,0,0], [255, 255, 255]],
+    #       [[0,0,0],[255, 255, 255],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [255, 255, 255], [0,0,0]],
+    #       [[0,0,0],[0,0,0],[255, 255, 255],[0,0,0],[0,0,0],[0,0,0],[0,0,0], [255, 255, 255], [0,0,0], [0,0,0]],
+    #       [[0,0,0],[0,0,0],[0,0,0],[255, 255, 255], [0,0,0],[0,0,0],[255, 255, 255], [0,0,0], [0,0,0], [0,0,0]],
+    #       [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[255, 255, 255],[255, 255, 255],[0,0,0], [0,0,0], [0,0,0], [0,0,0]]]
 
     adj_mat = np.zeros(((2 + len(im) * len(im[0])), (2 + len(im) * len(im[0]))))
-    adj_mat2 = np.zeros((2 + len(im) * len(im[0])), (2 + len(im) * len(im[0])))
 
     # Next add weights I guess
 
@@ -63,37 +67,24 @@ def im_to_graph(filename, sig_R, sig_W):
             # From paper, p(v|SIGMA, mu) = sum(1/(sqrt(2pi|SIGMA_i|)) * e^(-0.5((v-mu_i)^T)*(SIGMA_i^-1) *(v-mu_i)))
             #For now, might just make s and t weights 0.5, so that cutting them is not incentivized or discouraged
 
-            # Binary version of the calculation (rough rough draft)
-
-            # if sum(v) == (255*3):
-            #     im2[i][j] = 1
-            # else:
-            #     im2[i][j] = 0
-            #
-            # Have to think about what making the adjacency matrix will look like a decent amount more
-            # this won't really work
-            #
-            # if im[i][j] == 1:
-            #     adj_mat[i][j+1] = (i+j)/2
-            #     adj_mat[i+1][i] = (i+j)/2
-            #     adj_mat[i+1][i+1] = (i+j)/2
-            #
-            # if i == j:
-            #     adj_mat[i][i] = 0
-
-
 
             # Weighting things based on the assumption that things will be black and white
 
-            if sum(v) == (255*3): # If the pixel = white
+            if sum(v) >= (255*2): # If the pixel = white
 
-                adj_mat[loc][-1] = 10
-                adj_mat[-1][loc] = 10
+                adj_mat[loc][-1] = 10000
+                adj_mat[-1][loc] = 10000
 
-            elif sum(v) == 0:  # If the pixel = black
+                adj_mat[loc][-2] = 0.01
+                adj_mat[-2][loc] = 0.01
 
-                adj_mat[loc][-2] = 10
-                adj_mat[-2][loc] = 10
+            elif sum(v) <= (255):  # If the pixel = black
+
+                adj_mat[loc][-1] = 0.01
+                adj_mat[-1][loc] = 0.01
+
+                adj_mat[loc][-2] = 10000
+                adj_mat[-2][loc] = 10000
 
             # elif sum(v) <= (255) and sum(v) >= 0: # if the pixel = a color (but this is any color)
             #
@@ -130,11 +121,11 @@ def graph_to_im(graph, cut, image, file_extension=''):
         x = i % len(im[0])
         y = i // len(im[0])
         if sum(foreground[i]) == 0:
-            print("Yeah!")
+            #print("Yeah!")
             new_im_f[y][x] = (255,0,0)
 
         if sum(background[i]) == 0:
-            print("Some red")
+            # print("Some red")
             new_im_b[y][x] = (255,0,0)
 
     sp.imsave('foreground' + file_extension + '.png', new_im_f)
@@ -144,17 +135,25 @@ def graph_to_im(graph, cut, image, file_extension=''):
     # sp.imshow(background)
 
 
-
-
 if __name__ == "__main__":
     # Create results file
     results_file = open("image_graph_test1.txt","w")
     g = im_to_graph("tiny_picture.png", 10, 1000000)
     im = sp.imread("tiny_picture.png", mode='RGB')
+    # im = [[[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+    #       [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+    #       [[0,0,0],[0,0,0],[255, 255, 255],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [255, 255, 255], [0,0,0], [0,0,0]],
+    #       [[0,0,0],[0,0,0],[255, 255, 255],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [255, 255, 255], [0,0,0], [0,0,0]],
+    #       [[0,0,0],[0,0,0],[255, 255, 255],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [255, 255, 255], [0,0,0], [0,0,0]],
+    #       [[255, 255, 255],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [0,0,0], [255, 255, 255]],
+    #       [[0,0,0],[255, 255, 255],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [255, 255, 255], [0,0,0]],
+    #       [[0,0,0],[0,0,0],[255, 255, 255],[0,0,0],[0,0,0],[0,0,0],[0,0,0], [255, 255, 255], [0,0,0], [0,0,0]],
+    #       [[0,0,0],[0,0,0],[0,0,0],[255, 255, 255], [0,0,0],[0,0,0],[255, 255, 255], [0,0,0], [0,0,0], [0,0,0]],
+    #       [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[255, 255, 255],[255, 255, 255],[0,0,0], [0,0,0], [0,0,0], [0,0,0]]]
     np.save("test_adj_mat.npy", np.array(g.adj_mat))
 
     print("Testing Karger Cut Algorithm.")
-    for i in range(1):
+    for i in range(2):
 
         print("Graph initialized, iteration %s." % i)
         print(np.array(g.adj_mat))
