@@ -247,28 +247,35 @@ class Graph: #Undirected, but can be a multigraph
     # The goal of Stoer-Wagner: do all the cuts, when new_cut is less than best_cut, reset best_cut
         #return best_cut
 
-    def minimumCutPhase(self, g):
+    def minimumCutPhase(self, g, V):
+
+            # Make a copy of the g graph
 
             c = copy.deepcopy(g)
 
-            vertexOrder = []
-            iterateV = [vertexOrder.append(i) for i in range(0, len(c.adj_mat), 1)]
+            # Initialize a blank array that will hold the contracted vertex at each step
 
-            contractedIndex = []
             A = [0]
+
+            # As the program looks for A values, it will store the output of each step here
+
             possible_A = 0
-            accumulatePoint = 0
 
-            contractedVertex = 0
+            # Stores where the contracted vertex is in the adjacency matrix
 
+            contractedIndex = 0
 
-            while len(A) < len(g.adj_mat) - 1:
+            # While we've contracted everything except 1 vertex
 
-                #First find most tightly connected
+            while len(A) < len(g.adj_mat) - 1: # The # of vertices = the length of the g adjacency matrix
+
+                # Variable used to compare
+
                 largestIntersect = [0]
+
                 for i in range(0, (len(c.adj_mat))):
-                    currentWeight = c.adj_mat[i][contractedVertex]
-                    if i != contractedVertex and currentWeight > largestIntersect[-1]:
+                    currentWeight = c.adj_mat[i][contractedIndex]
+                    if i != contractedIndex and currentWeight > largestIntersect[-1]:
                         largestIntersect.append(currentWeight)
                         possible_A = i;
                 A.append(vertexOrder.index(possible_A))
@@ -280,7 +287,7 @@ class Graph: #Undirected, but can be a multigraph
                     if i == A[-1]:
                         vertexOrder[i] = 0
 
-                #Contract the edge
+                #
                 print(A)
                 edge = (0, possible_A)
                 c.contract(edge)
@@ -295,38 +302,23 @@ class Graph: #Undirected, but can be a multigraph
         # Set current minimum cut to something absurdly large so that the cutOfPhase results can replace it
 
         currentMinimumCut = 100
-        best_partition = 0
-        """Need to find a way to describe partitions, see note below"""
 
         # Create a copy of the adjacency matrix so that we don't change the original
-        """There is a hierarchy here where we dont touch self, we just try to find its minimum cut,
-        g is the graph we contract as shown in the paper, and c is the graph we contract as shown in
-        my notebook. That way they all stay safe, but we can make the edits we need to in order to
-        learn things"""
+
         g = copy.deepcopy(self)
 
         # Re-creating the vertex array using method from minimumCutPhase
 
-        # V = []
-        # for i in range(0, len(c.adj_mat), 1):
-        #     V.append(i)
-        """Actually dont need this, we just need to count the vertices,
-        don't have to keep track of them in any order or anything"""
+        V = []
+        iterateV = [vertexOrder.append(i) for i in range(0, len(c.adj_mat), 1)]
 
         while len(g.adj_mat) > 1:
             cutOfPhase, final_A = self.minimumCutPhase(g)
-            """I changed this a little to get the values minimumCutPhase returns"""
-
             if cutOfPhase < currentMinimumCut:
                 currentMinimumCut = cutOfPhase
-                best_partition = final_A[-1]
-                """Need some logic here to figure out what partition in self
-                this vertex of g corresponds to, like what it shows in the paper."""
 
-            """Then we contract and go again on the smaller graph."""
             g.contract((final_A[-1], final_A[-2]))
 
-        """Finally, just return the best value and what partition of self we got it from"""
         return currentMinimumCut, best_partition
 
 
