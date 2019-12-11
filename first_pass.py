@@ -257,7 +257,8 @@ class Graph: #Undirected, but can be a multigraph
 
             A = [0]
 
-            # As the program looks for A values, it will store the output of each step here
+            # As the program looks for most itghtly connected vertex values,
+            # it will store the output of each step here
 
             possible_A = 0
 
@@ -269,7 +270,11 @@ class Graph: #Undirected, but can be a multigraph
 
             while len(A) < len(g.adj_mat) - 1: # The # of vertices = the length of the g adjacency matrix
 
-                # Variable used to compare
+                # Looks through all of the rows in the column associated with the contracted vertex A
+                # in the adjacency matrix and finds the largest one (the one most tightly connected with the contracted vertex A)
+                # and saves the vertex (which is represented by the row index i) as a possible represented of the vertex most tightly connected to A
+
+                ## Note: Just to make sure that it does this correctly, we make sure that it skips the row representing the current A
 
                 largestIntersect = [0]
 
@@ -278,8 +283,15 @@ class Graph: #Undirected, but can be a multigraph
                     if i != contractedIndex and currentWeight > largestIntersect[-1]:
                         largestIntersect.append(currentWeight)
                         possible_A = i;
+
+                # Add the possible_A that we get at the end of the loop (which should represent the most tightly connected vertex and therefore the next A)
+                # But we do this after we go through a process of finding out where the new A is in an adjacency matrix where the contraction is represented
+
                 A.append(vertexOrder.index(possible_A))
 
+                # We use the vertexOrder array representing how the vertices are organized in the adjacency matrix as contractions occurs
+                # First we set all of the indexs vertices that are higher in the order than the new A to be one less than their current value
+                # Then we set the index in the vertex order that is = to the current A value to be the new contracted vertex, which is at vertexOrder column 0
 
                 for i in range(0, (len(vertexOrder))):
                     if i > A[-1] and vertexOrder[i] != 0:
@@ -287,13 +299,19 @@ class Graph: #Undirected, but can be a multigraph
                     if i == A[-1]:
                         vertexOrder[i] = 0
 
-                #
-                print(A)
+                # The edge that is being contracted will always be between the contracted vertex (0) and the output for the most tightly connected vertex (possible A)
                 edge = (0, possible_A)
+
+                # Contract the edge that connects the contracted vertex and vertex that is most tightly connected to the contracted vertex
                 c.contract(edge)
 
+            # The final cut of phase will be between the two vertices that remain after everything but one vertex has been contracted
             cutOfPhase = c.adj_mat[0][1]
+
+            # Append the remaining vertex in vertex order (which will be the single un-contracted vertex after everything else has been contracted) to A
             A.append(vertexOrder.index(1))
+
+            # Output the cut of phase and A array
             return cutOfPhase, A
 
 
@@ -319,7 +337,7 @@ class Graph: #Undirected, but can be a multigraph
 
             g.contract((final_A[-1], final_A[-2]))
 
-        return currentMinimumCut, best_partition
+        return currentMinimumCut
 
 
 
