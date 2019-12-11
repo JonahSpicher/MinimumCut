@@ -108,41 +108,6 @@ class Graph: #Undirected, but can be a multigraph
                 self.adj_mat = [[0]]
 
 
-    def add_lone_vertex(self):
-           # Add an additional row. Then add an additional 0 to each row.
-           # Essentially it increases the column # and row # by 1.
-
-        self.adj_mat.append([0]*(len(self.adj_mat) - 1)) ## Will this add an additional row?
-        for row in self.adj_mat:
-            row.append(0)
-
-
-    def add_edge(self, v1, v2, num=1):
-        # Index to the intersection between two vertices in the matrix and add
-        # num to each place where the intersection occurs
-
-        # Note: this is also accounting for the fact that there will be two places
-        # in the adjacency matrix that represent a single edge.
-
-        #Example: The edge that connects vertex 1 and vertex 2 is represented by (2,1) and (1,2)
-
-        self.adj_mat[v1][v2] += num
-        self.adj_mat[v2][v1] += num
-
-        # Append the new vertex to the edge matrix
-
-        for i in range(num):
-            self.E.append((v1, v2))
-
-    def add_vertex(self, vs, nums=None):
-        # Adds vertices and corresponding connections to an existing adjacency matrix
-
-        if nums == None:
-            nums = [1]*len(vs)   # Make nums the same length as vs (which is the edge #)
-        self.add_lone_vertex()   # Add a vertex
-        for i in range(len(vs)): # Add edges that correspond with the vertex
-            self.add_edge(self.V[-1], vs[i], nums[i])
-
     def contract(self, edge):
         # Edge is a tuple of the two connected vertices
         # Remembers edges using index in self.
