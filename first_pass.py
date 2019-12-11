@@ -247,14 +247,22 @@ class Graph: #Undirected, but can be a multigraph
     # The goal of Stoer-Wagner: do all the cuts, when new_cut is less than best_cut, reset best_cut
         #return best_cut
 
-    def minimumCutPhase(self, g, V):
+    def minimumCutPhase(self, g):
 
             # Make a copy of the g graph
 
             c = copy.deepcopy(g)
 
-            # Initialize a blank array that will hold the contracted vertex at each step
+            # Initialize a representation of the vertex order (as in StoerWagner)
 
+            vertexOrder = []
+            iterateV = [vertexOrder.append(i) for i in range(0, len(g.adj_mat), 1)]
+
+            # Create an empty array to hold edges representing the minimum cut
+
+            cutEdges = []
+
+            # Initialize a blank array that will hold the contracted vertex at each step
             A = [0]
 
             # As the program looks for most itghtly connected vertex values,
@@ -299,48 +307,67 @@ class Graph: #Undirected, but can be a multigraph
                     if i == A[-1]:
                         vertexOrder[i] = 0
 
+                # What gets put into the new A will therefore be the index of vertexOrder representing the most tightly connected vertex
+
                 # The edge that is being contracted will always be between the contracted vertex (0) and the output for the most tightly connected vertex (possible A)
+
                 edge = (0, possible_A)
 
                 # Contract the edge that connects the contracted vertex and vertex that is most tightly connected to the contracted vertex
+
                 c.contract(edge)
 
-            # The final cut of phase will be between the two vertices that remain after everything but one vertex has been contracted
+            # The final cut of phase will be the weight of the cut
             cutOfPhase = c.adj_mat[0][1]
 
             # Append the remaining vertex in vertex order (which will be the single un-contracted vertex after everything else has been contracted) to A
             A.append(vertexOrder.index(1))
 
-            # Output the cut of phase and A array
-            return cutOfPhase, A
+            # Cut Edges
+            for i in range(0, len(c.E)):
+                if c.E[i] != (-1,-1):
+                    vert = c.E[i]
+                    cutEdges.append(vert)
+
+            # Output the cut of phase and A array (Output will look like (weight of cut, [A array])
+            return cutOfPhase, A, cutEdges
 
 
-    def StoerWagner(self, cutOfPhase):
+    def StoerWagner(self):
 
         # Set current minimum cut to something absurdly large so that the cutOfPhase results can replace it
 
         currentMinimumCut = 100
 
+        # Create an empty array representing the minimum cut edges
+
+        currentMinimumCutEdges = [];
+
         # Create a copy of the adjacency matrix so that we don't change the original
 
         g = copy.deepcopy(self)
 
-        # Re-creating the vertex array using method from minimumCutPhase
+        # Represent the order of the vertices in the adjacency matrix
+        # Initialize it by filling it up with the index of every vertex that's currently in the adjacency matrix
+        # For a graph with 4 points this would be [0, 1, 2, 3]
 
-        V = []
-        iterateV = [vertexOrder.append(i) for i in range(0, len(c.adj_mat), 1)]
+        vertexOrder = []
+        iterateV = [vertexOrder.append(i) for i in range(0, len(g.adj_mat), 1)]
+
+        # If there is more than one vertex in the adjacency matrix and the cutOfPhase is smaller
+        # Contract the uncontracted vertex in A and the one contracted right before (Last two values in A)
 
         while len(g.adj_mat) > 1:
-            cutOfPhase, final_A = self.minimumCutPhase(g)
+            cutOfPhase, A, cutEdges = self.minimumCutPhase(g)
             if cutOfPhase < currentMinimumCut:
                 currentMinimumCut = cutOfPhase
+                currentMinimumCutEdges = cutEdges
 
-            g.contract((final_A[-1], final_A[-2]))
+            g.contract((A[-1], A[-2]))
 
-        return currentMinimumCut
+        # Output the smallest cut weight and the edges associated with the smallest cut
 
-
-
+        return currentMinimumCut, currentMinimumCutEdges
 
     # The Karger Stein algorithm is a recursive version of the Karger algorithm
     # with increased accuracy
@@ -459,14 +486,21 @@ class Graph: #Undirected, but can be a multigraph
 
 
 if __name__ == "__main__":
-    test_mat = [[0, 1, 1, 1, 1],
-                [1, 0, 1, 1, 0],
-                [1, 1, 0, 1, 1],
-                [1, 1, 1, 0, 1],
-                [1, 0, 1, 1, 0]]
-    # test_mat = [[0, 2, 1],
-    #             [2, 0, 0],
-    #             [1, 0, 0]]
+
+    # If using Karger/Karger-Stein use this
+    # test_mat = [[0, 1, 1, 1, 1],
+    #             [1, 0, 1, 1, 0],
+    #             [1, 1, 0, 1, 1],
+    #             [1, 1, 1, 0, 1],
+    #             [1, 0, 1, 1, 0]]
+
+    # If using Stoer-Wagner, comment the above test_mat out and use This
+    test_mat = [[0, 3, 1, 5, 2],
+               [3, 0, 0, 0, 4],
+               [1, 0, 0, 4, 2],
+               [5, 0, 4, 0, 2],
+               [2, 4, 2, 2, 0]]
+
     # V = 9
     # E = [(0, 1), (0, 2), (0, 3), (0, 4), (0, 7), (1, 2), (1, 4), (1, 8), (2, 4), (2, 5), (5, 4), (5, 8), (8, 4), (8, 7), (7, 4), ()]
     # V = 3
@@ -482,9 +516,16 @@ if __name__ == "__main__":
     #print(g.E)
 
     #g.contract((0,2))
+
+    # If using Karger use this:
     #g.Karger_cut()
-    print(g.Karger_cut())
+
+    # If using Karger Stein, use this:
     #print(g.KargerStein())
+
+    # If using Stoer-Wagner use this:
+    print(g.StoerWagner())
+
     # print(g.adj_mat)
     # print(g.E)
 
