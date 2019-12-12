@@ -239,6 +239,11 @@ class Graph: #Undirected, but can be a multigraph
 
             contractedIndex = 0
 
+            # Variable that stores the initial edges to serve as a point of comparison for the final cut
+            # (Helps untangle the fact that we redefine edges as we contract)
+
+            initialEdges = self.E
+
             # While we've contracted everything except 1 vertex
 
             while len(A) < len(g.adj_mat) - 1: # The # of vertices = the length of the g adjacency matrix
@@ -288,10 +293,15 @@ class Graph: #Undirected, but can be a multigraph
             # Append the remaining vertex in vertex order (which will be the single un-contracted vertex after everything else has been contracted) to A
             A.append(vertexOrder.index(1))
 
-            # Cut Edges
+            cutEdges = []
+
+            # If the edge hasn't been contracted by the end of minCutPhase, take the index of the edge and find that edge in the original set of edges
+            # Return the edges from the original set relevant to the minimum cut as cutEdges
+
             for i in range(0, len(c.E)):
                 if c.E[i] != (-1,-1):
-                    vert = c.E[i]
+                    vertIndex = i
+                    vert = initialEdges[i]
                     cutEdges.append(vert)
 
             # Output the cut of phase and A array (Output will look like (weight of cut, [A array])
@@ -325,12 +335,12 @@ class Graph: #Undirected, but can be a multigraph
         while len(g.adj_mat) > 1:
             cutOfPhase, A, cutEdges = self.minimumCutPhase(g)
             if cutOfPhase < currentMinimumCut:
-                currentMinimumCut = cutOfPhase
-                currentMinimumCutEdges = cutEdges
+                currentMinimumCut = cutOfPhase       # Store the current minimum cut weight
+                currentMinimumCutEdges = cutEdges    # Store the edges from the original graph associated with that minimum cut
 
             g.contract((A[-1], A[-2]))
 
-        # Output the smallest cut weight and the edges associated with the smallest cut
+        # Output the smallest cut weight and the edges from the original graph associated with the smallest cut
 
         return currentMinimumCut, currentMinimumCutEdges
 
@@ -460,7 +470,7 @@ if __name__ == "__main__":
     #             [1, 0, 1, 1, 0]]
 
     # If using Stoer-Wagner, comment the above test_mat out and use This
-    test_mat = [[0, 3, 1, 5, 2],
+    test_mat = [[0, 3, 1, 5, 2],  # This is the graph from the slides
                [3, 0, 0, 0, 4],
                [1, 0, 0, 4, 2],
                [5, 0, 4, 0, 2],
