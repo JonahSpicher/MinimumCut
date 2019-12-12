@@ -2,7 +2,6 @@ import random
 import math
 import copy
 import numpy as np
-# TODO: Stoer Wagner
 
 class Graph: #Undirected, but can be a multigraph
 
@@ -108,41 +107,6 @@ class Graph: #Undirected, but can be a multigraph
                 self.adj_mat = [[0]]
 
 
-    def add_lone_vertex(self):
-           # Add an additional row. Then add an additional 0 to each row.
-           # Essentially it increases the column # and row # by 1.
-
-        self.adj_mat.append([0]*(len(self.adj_mat) - 1)) ## Will this add an additional row?
-        for row in self.adj_mat:
-            row.append(0)
-
-
-    def add_edge(self, v1, v2, num=1):
-        # Index to the intersection between two vertices in the matrix and add
-        # num to each place where the intersection occurs
-
-        # Note: this is also accounting for the fact that there will be two places
-        # in the adjacency matrix that represent a single edge.
-
-        #Example: The edge that connects vertex 1 and vertex 2 is represented by (2,1) and (1,2)
-
-        self.adj_mat[v1][v2] += num
-        self.adj_mat[v2][v1] += num
-
-        # Append the new vertex to the edge matrix
-
-        for i in range(num):
-            self.E.append((v1, v2))
-
-    def add_vertex(self, vs, nums=None):
-        # Adds vertices and corresponding connections to an existing adjacency matrix
-
-        if nums == None:
-            nums = [1]*len(vs)   # Make nums the same length as vs (which is the edge #)
-        self.add_lone_vertex()   # Add a vertex
-        for i in range(len(vs)): # Add edges that correspond with the vertex
-            self.add_edge(self.V[-1], vs[i], nums[i])
-
     def contract(self, edge):
         # Edge is a tuple of the two connected vertices
         # Remembers edges using index in self.
@@ -206,7 +170,7 @@ class Graph: #Undirected, but can be a multigraph
 
     def Karger_cut(self):
         #First make a copy so the original isnt disturbed
-        h = Graph(adj_mat=self.adj_mat)
+        h = copy.deepcopy(self)
         #Now do the cut
         while len(h.adj_mat) > 2:    # While we haven't reached the condition of having two vertices
             edge = (-1,-1)           # Initialize edge to contracted edge condition
@@ -248,170 +212,135 @@ class Graph: #Undirected, but can be a multigraph
         #return best_cut
 
     def minimumCutPhase(self, g):
-    ## TODO: # Might have to look at the behavior for the first time step. It seems like from the paper that regardless of starting point,
-    #          it winds up going to the tightest connected vertex immediately.
 
-    # First let's initialize a new version of the adjacency matrix so we don't overwrite what we previously
-    #established
+            # If you haven't already, it might be worth starting out by looking at StoerWagner because it's the outer shell of this function
 
-        c = copy.deepcopy(g) # Commented out because I think this belongs in StoerWagner
-        """ah, sort of. Stoer Wagner does this too, but this modifies the graph StoerWagner is using, so it needs to do it too."""
+            # Make a copy of the g graph
 
-        # Initialize V (the number of vertices we're dealing with)
-        # I also decided that this belonged in StoerWagner
-        """Actually, this also belongs here, because there are two different relevant V's, the number of vertices in the full
-        graph and the number currently being looked at"""
+            c = copy.deepcopy(g)
 
-        # V = []
-        # for i in range(0, len(c.adj_mat), 1):
-        #     V.append(i)
-        """We don't need this because you only use it to get its length, which we know already"""
+            # Represent the order of the vertices in g
+            # Initialize vertexOrder by filling it up with the index of every vertex that's currently in the adjacency matrix
+            # For a graph with 5 points this would be [0, 1, 2, 3, 4]
 
-        # Initialize A to a random vertex (or just to 0)
+            vertexOrder = []
+            iterateV = [vertexOrder.append(i) for i in range(0, len(g.adj_mat), 1)]
 
-        #a = 0
+            # Create an empty array to hold edges representing the minimum cut
 
-        #A = [random.choice(V)]
-        A = [0]
+            cutEdges = []
 
-        #print('Edges Before', c.E)
+            # Initialize a blank array that will hold the contracted vertex at each step
+            A = [0]
 
-        # Stoer Wagner runs as long as the number of values in A (length of A - 1, think spaces between sticks with sticks being the commas in the array)
-        # and the number of values in V (V - 1 for the same reason) as well as when the length of the adjacency matrix is greater than or equal to three
+            # As the program looks for most itghtly connected vertex values,
+            # it will store the output of each step here
 
-        # Interestingly the length of the adjacency matrix being = to three is representative of there being only two vertices due to the way we set up
-        # the adjacency matrix
-        """Umm this is not true, if len(adj_mat) = 3 there are 3 vertices """
+            possible_A = 0
 
+            # Stores where the contracted vertex is in the adjacency matrix
 
-        """
-        while (len(A) - 1) < (len(V) - 1) and len(c.adj_mat) >= 3: You dont need the >=3, thats a separate thing,
-        and we actually want to stop when we have two vertices because its easier to check things then,
-        so this should be:
-        """
-        while len(A) < len(g.adj_mat) - 1:
+            contractedIndex = 0
 
+            # Variable that stores the initial edges to serve as a point of comparison for the final cut
+            # (Helps untangle the fact that we redefine edges as we contract)
 
-            # We set the current vertex to be the last value in A by putting the number of values in A in as the index
+            initialEdges = self.E
 
-            currentVertex = A[len(A)- 1]
+            # While we've contracted everything except 1 vertex
 
-            # We then set up dummy variables that will later be used in the calculation
+            while len(A) < len(g.adj_mat) - 1: # The # of vertices = the length of the g adjacency matrix
 
-            intersectVertex = 0      # Represents a single value that will be the result of adding every value in the row
-            largestIntersect = 0     # The largest value summed row value in the adjacency matrix
-            tightestWithCurrent = 0  # Represents the vertex most tightly connected to the current vertex
+                # Looks through all of the rows in the column associated with the contracted vertex A
+                # in the adjacency matrix and finds the largest one (the one vertex most tightly connected with the contracted vertex A)
+                # and saves this most tightly connected vertex (which is represented by the row index i)
 
-            # We find the vertex most tightly connected with the current using the following for loop with if statements
+                ## Note: Just to make sure that it does this correctly, we make sure that it skips the row representing the current A
 
-            """I don't think this for loop does this, it gets whichever vertex is most tightly connected
-            to the vertex added most recently to A (I think), but we want the one most tightly connected
-            to any vertex in A. Probably the best way to do this is to contract an edge of C every time
-            so that every vertex of g in A is just one vertex in c, but it gets hard (but not impossible)
-            to keep track of vertices because they get renumbered."""
-            for i in range(len(c.adj_mat)):                       # We index through all of the rows
-                if i != currentVertex:                            # We skipping the row that represents the current vertex
+                largestIntersect = [0]
 
-                    intersectVertex = c.adj_mat[i][currentVertex] # We record the intersection between the currentVertex and all others as the value of each row
-                                                                  # in the current vertex's column except the row that represents the current vertex
+                for i in range(0, (len(c.adj_mat))):
+                    currentWeight = c.adj_mat[i][contractedIndex]
+                    if i != contractedIndex and currentWeight > largestIntersect[-1]:
+                        largestIntersect.append(currentWeight)
+                        possible_A = i;
 
-                if intersectVertex > largestIntersect:            # We see if the value representing the intersection with current vertex is larger than the previous
-                    largestIntersect = intersectVertex            # If the value is larger we replace the current largest value with it
-                    tightestWithCurrent = i                       # We record the index for the vertex most tightly connected as the current vertex
+                # Add the possible_A that we get at the end of the loop (which should represent the most tightly connected vertex and therefore the next A)
+                # But we do this after we go through a process of finding out where the new A is in an adjacency matrix where the contraction is represented
 
-            # The next most tightly connected (to current) vertex will be the largest value in the current vertex column that isn't representative of the vertex itself
+                A.append(vertexOrder.index(possible_A))
 
-            # We add the most tightly connected vertex to the list A
+                # We use the vertexOrder array representing how the vertices are organized in the adjacency matrix as contractions occurs
+                # First we set all of the indexs vertices that are higher in the order than the new A to be one less than their current value
+                # Then we set the index in the vertex order that is = to the current A value to be the new contracted vertex (which is always at vertexOrder column 0)
 
-            A.append(tightestWithCurrent)
-            print('Next Tightest Vertex', tightestWithCurrent)
-            print('Current A', A)
+                for i in range(0, (len(vertexOrder))):
+                    if i > A[-1] and vertexOrder[i] != 0:
+                        vertexOrder[i] -= 1
+                    if i == A[-1]:
+                        vertexOrder[i] = 0
 
-            # We set the index of the last value in A (-1 because it indexes from 0)
+                # What gets put into the new A will therefore be the index of vertexOrder representing the most tightly connected vertex
 
-            currentIndex = len(A) - 1
-            """In python you can do A[-1] to get the last element"""
+                # The edge that is being contracted will always be between the contracted vertex (0) and the output for the most tightly connected vertex (possible A)
 
-            # We set the edge to be the edge between the current vertex and the one most tightly connected to the current vertex
-            # The vertex most tightly connected to the current will be the last value of A and the current vertex will be the one before it
+                edge = (0, possible_A)
 
-            edge = (A[currentIndex-1], A[currentIndex])
-            """So this is equivalent to edge = (A[-2], A[-1]), which would also work, just so you know.
-            But also, this is the wrong edge to contract. You want to contract the A vertex (which is 0),
-            because you initialized A as [0] with the most recent one. So you should write
-            edge = (A[0], A[-1])"""
-            print("Edge", edge)
+                # Contract the edge that connects the contracted vertex and vertex that is most tightly connected to the contracted vertex
 
-            # We contract the edge associated with the current vertex and the one most tightly connected to it
-            currentContraction = c.contract(edge)
+                c.contract(edge)
 
-            print(len(c.adj_mat))
-            print('adj_mat', c.adj_mat)
-            print('New Edges', c.E)
+            # The final cut of phase will be the weight of the cut (since there are only two values in the c adjacency matrix now, we can find it this way)
+            cutOfPhase = c.adj_mat[0][1]
 
-        # We initialize the sum of the edges cut (the cut itself)
+            # Append the remaining vertex in vertexOrder (which will be the single un-contracted vertex after everything else has been contracted) to A
+            A.append(vertexOrder.index(1))
 
-        sum = 0
+            # Create an empty array to store the edges that get cut
 
-        # Once all possible edges have been contracted, we index through the value, skipping the contracted edges and making a sum = to the cut
+            cutEdges = []
 
-        # for i in range(len(c.E)):
-        #     if c.E[i] == (-1, -1):
-        #         pass
-        #     else:
-        #         cutOfPhase += 1
-                #print(c.E[i])
-                #print(sum)
-        """There aren't any (-1,-1)'s here, because nothing has been cut. Things have been
-        contracted though, so at this point, c has a 2x2 adjacency matrix, so all you have to do is this:"""
-        cutOfPhase = c.adj_mat[0][1]
-        """We want to return A becuase we need to know what partition this cutOfPhase corresponds to,
-        the last two values of A are s and t, where t tells us what vertex (or vertices) we cut off
-        and s and t together tell us what to contract in g."""
-        return cutOfPhase, A
+            # If the edge hasn't been contracted by the end of minCutPhase, take the index of the edge, find that edge in the original set of edges, and add it to cutEdges
+            # Return the edges from the original set relevant to the minimum cut as cutEdges
+
+            for i in range(0, len(c.E)):
+                if c.E[i] != (-1,-1):
+                    vertIndex = i
+                    vert = initialEdges[i]
+                    cutEdges.append(vert)
+
+            # Output the cut of phase and A array (Output will look like (weight of cut, [A array])
+            return cutOfPhase, A, cutEdges
 
 
-    def StoerWagner(self, cutOfPhase):
+    def StoerWagner(self):
 
         # Set current minimum cut to something absurdly large so that the cutOfPhase results can replace it
 
         currentMinimumCut = 100
-        best_partition = 0
-        """Need to find a way to describe partitions, see note below"""
+
+        # Create an empty array representing the minimum cut edges
+
+        currentMinimumCutEdges = [];
 
         # Create a copy of the adjacency matrix so that we don't change the original
-        """There is a hierarchy here where we dont touch self, we just try to find its minimum cut,
-        g is the graph we contract as shown in the paper, and c is the graph we contract as shown in
-        my notebook. That way they all stay safe, but we can make the edits we need to in order to
-        learn things"""
+
         g = copy.deepcopy(self)
 
-        # Re-creating the vertex array using method from minimumCutPhase
-
-        # V = []
-        # for i in range(0, len(c.adj_mat), 1):
-        #     V.append(i)
-        """Actually dont need this, we just need to count the vertices,
-        don't have to keep track of them in any order or anything"""
+        # If there is more than one vertex in the adjacency matrix and the cutOfPhase is smaller
+        # Contract the uncontracted vertex in A and the one contracted right before (Last two values in A)
 
         while len(g.adj_mat) > 1:
-            cutOfPhase, final_A = self.minimumCutPhase(g)
-            """I changed this a little to get the values minimumCutPhase returns"""
-
+            cutOfPhase, A, cutEdges = self.minimumCutPhase(g) # Run minimumCutPhase (read function above to understand) to find cutOfPhase, A, and cutEdges
             if cutOfPhase < currentMinimumCut:
-                currentMinimumCut = cutOfPhase
-                best_partition = final_A[-1]
-                """Need some logic here to figure out what partition in self
-                this vertex of g corresponds to, like what it shows in the paper."""
+                currentMinimumCut = cutOfPhase       # If the cutOfPhase is less than the currentMinimumCut store the current minimum cut weight
+                currentMinimumCutEdges = cutEdges    # Store the edges from the original graph associated with that minimum cut
 
-            """Then we contract and go again on the smaller graph."""
-            g.contract((final_A[-1], final_A[-2]))
+            g.contract((A[-1], A[-2]))
 
-        """Finally, just return the best value and what partition of self we got it from"""
-        return currentMinimumCut, best_partition
+        # Output the smallest cut weight and the edges from the original graph associated with the smallest cut
 
-
-
+        return currentMinimumCut, currentMinimumCutEdges
 
     # The Karger Stein algorithm is a recursive version of the Karger algorithm
     # with increased accuracy
@@ -420,6 +349,8 @@ class Graph: #Undirected, but can be a multigraph
     # cut, so we do this twice. Then, we run Karger again on the two partially
     # contracted graphs and continue doing this recursively until only two
     # vertices remain.
+    # The way it's written, this function takes a very long time to run, as it
+    # isn't fully parallelized.
     def KargerStein(self):
         print "Karger-Stein"
         print("beginning")
@@ -540,19 +471,21 @@ class Graph: #Undirected, but can be a multigraph
 
 
 if __name__ == "__main__":
-    test_mat = [[0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                [1, 0, 1, 1, 0, 1, 1, 1, 1, 1],
-                [1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
-                [1, 1, 1, 0, 1, 1, 1, 1, 1, 1],
-                [1, 0, 1, 1, 0, 1, 1, 1, 1, 1],
-                [1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
-                [1, 1, 1, 1, 1, 1, 0, 1, 1, 1],
-                [1, 1, 1, 1, 1, 1, 1, 0, 1, 1],
-                [1, 1, 1, 1, 1, 1, 1, 1, 0, 1],
-                [1, 1, 1, 1, 1, 1, 1, 1, 1, 0]]
-    # test_mat = [[0, 2, 1],
-    #             [2, 0, 0],
-    #             [1, 0, 0]]
+
+    # If using Karger/Karger-Stein use this
+    # test_mat = [[0, 1, 1, 1, 1],
+    #             [1, 0, 1, 1, 0],
+    #             [1, 1, 0, 1, 1],
+    #             [1, 1, 1, 0, 1],
+    #             [1, 0, 1, 1, 0]]
+
+    # If using Stoer-Wagner, comment the above test_mat out and use This
+    test_mat = [[0, 3, 1, 5, 2],  # This is the graph from the slides
+               [3, 0, 0, 0, 4],
+               [1, 0, 0, 4, 2],
+               [5, 0, 4, 0, 2],
+               [2, 4, 2, 2, 0]]
+
     # V = 9
     # E = [(0, 1), (0, 2), (0, 3), (0, 4), (0, 7), (1, 2), (1, 4), (1, 8), (2, 4), (2, 5), (5, 4), (5, 8), (8, 4), (8, 7), (7, 4), ()]
     # V = 3
@@ -568,9 +501,16 @@ if __name__ == "__main__":
     #print(g.E)
 
     #g.contract((0,2))
+
+    # If using Karger use this:
     #g.Karger_cut()
-    print(g.KargerStein())
+
+    # If using Karger Stein, use this:
     #print(g.KargerStein())
+
+    # If using Stoer-Wagner use this:
+    print(g.StoerWagner())
+
     # print(g.adj_mat)
     # print(g.E)
 
