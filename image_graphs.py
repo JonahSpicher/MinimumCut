@@ -161,7 +161,7 @@ if __name__ == "__main__":
     np.save("test_adj_mat.npy", np.array(g.adj_mat))
 
     print("Testing Karger Cut Algorithm.")
-    for i in range(10):
+    for i in range(2):
 
         print("Graph initialized, iteration %s." % i)
         print(np.array(g.adj_mat))
