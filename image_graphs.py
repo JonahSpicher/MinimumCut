@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.misc as sp
 import copy
-from first_pass import Graph
+from min_cut import Graph
 
 
 
