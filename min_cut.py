@@ -213,11 +213,15 @@ class Graph: #Undirected, but can be a multigraph
 
     def minimumCutPhase(self, g):
 
+            # If you haven't already, it might be worth starting out by looking at StoerWagner because it's the outer shell of this function
+
             # Make a copy of the g graph
 
             c = copy.deepcopy(g)
 
-            # Initialize a representation of the vertex order (as in StoerWagner)
+            # Represent the order of the vertices in g
+            # Initialize vertexOrder by filling it up with the index of every vertex that's currently in the adjacency matrix
+            # For a graph with 5 points this would be [0, 1, 2, 3, 4]
 
             vertexOrder = []
             iterateV = [vertexOrder.append(i) for i in range(0, len(g.adj_mat), 1)]
@@ -248,8 +252,8 @@ class Graph: #Undirected, but can be a multigraph
             while len(A) < len(g.adj_mat) - 1: # The # of vertices = the length of the g adjacency matrix
 
                 # Looks through all of the rows in the column associated with the contracted vertex A
-                # in the adjacency matrix and finds the largest one (the one most tightly connected with the contracted vertex A)
-                # and saves the vertex (which is represented by the row index i) as a possible represented of the vertex most tightly connected to A
+                # in the adjacency matrix and finds the largest one (the one vertex most tightly connected with the contracted vertex A)
+                # and saves this most tightly connected vertex (which is represented by the row index i)
 
                 ## Note: Just to make sure that it does this correctly, we make sure that it skips the row representing the current A
 
@@ -268,7 +272,7 @@ class Graph: #Undirected, but can be a multigraph
 
                 # We use the vertexOrder array representing how the vertices are organized in the adjacency matrix as contractions occurs
                 # First we set all of the indexs vertices that are higher in the order than the new A to be one less than their current value
-                # Then we set the index in the vertex order that is = to the current A value to be the new contracted vertex, which is at vertexOrder column 0
+                # Then we set the index in the vertex order that is = to the current A value to be the new contracted vertex (which is always at vertexOrder column 0)
 
                 for i in range(0, (len(vertexOrder))):
                     if i > A[-1] and vertexOrder[i] != 0:
@@ -286,15 +290,17 @@ class Graph: #Undirected, but can be a multigraph
 
                 c.contract(edge)
 
-            # The final cut of phase will be the weight of the cut
+            # The final cut of phase will be the weight of the cut (since there are only two values in the c adjacency matrix now, we can find it this way)
             cutOfPhase = c.adj_mat[0][1]
 
-            # Append the remaining vertex in vertex order (which will be the single un-contracted vertex after everything else has been contracted) to A
+            # Append the remaining vertex in vertexOrder (which will be the single un-contracted vertex after everything else has been contracted) to A
             A.append(vertexOrder.index(1))
+
+            # Create an empty array to store the edges that get cut
 
             cutEdges = []
 
-            # If the edge hasn't been contracted by the end of minCutPhase, take the index of the edge and find that edge in the original set of edges
+            # If the edge hasn't been contracted by the end of minCutPhase, take the index of the edge, find that edge in the original set of edges, and add it to cutEdges
             # Return the edges from the original set relevant to the minimum cut as cutEdges
 
             for i in range(0, len(c.E)):
@@ -321,20 +327,13 @@ class Graph: #Undirected, but can be a multigraph
 
         g = copy.deepcopy(self)
 
-        # Represent the order of the vertices in the adjacency matrix
-        # Initialize it by filling it up with the index of every vertex that's currently in the adjacency matrix
-        # For a graph with 4 points this would be [0, 1, 2, 3]
-
-        vertexOrder = []
-        iterateV = [vertexOrder.append(i) for i in range(0, len(g.adj_mat), 1)]
-
         # If there is more than one vertex in the adjacency matrix and the cutOfPhase is smaller
         # Contract the uncontracted vertex in A and the one contracted right before (Last two values in A)
 
         while len(g.adj_mat) > 1:
-            cutOfPhase, A, cutEdges = self.minimumCutPhase(g)
+            cutOfPhase, A, cutEdges = self.minimumCutPhase(g) # Run minimumCutPhase (read function above to understand) to find cutOfPhase, A, and cutEdges
             if cutOfPhase < currentMinimumCut:
-                currentMinimumCut = cutOfPhase       # Store the current minimum cut weight
+                currentMinimumCut = cutOfPhase       # If the cutOfPhase is less than the currentMinimumCut store the current minimum cut weight
                 currentMinimumCutEdges = cutEdges    # Store the edges from the original graph associated with that minimum cut
 
             g.contract((A[-1], A[-2]))
