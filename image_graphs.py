@@ -7,9 +7,13 @@ from first_pass import Graph
 
 def im_to_graph(filename, sig_R, sig_W):
     #First, initialize matrix of the right size
-    im = sp.imread(filename, mode='RGB')
+    #im = sp.imread(filename, mode='RGB')
 
-    #Temporary testing setup
+    im = [[[255, 255, 255],[255,255,255],[255,255,255]],
+          [[0,0,0],[0,0,0],[255,255,255]],
+          [[0,0,0],[0,0,0],[0,0,0]]]
+
+    #Temporary testing setup (for the smiley face)
     # im = [[[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
     #       [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
     #       [[0,0,0],[0,0,0],[255, 255, 255],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [255, 255, 255], [0,0,0], [0,0,0]],
@@ -23,7 +27,7 @@ def im_to_graph(filename, sig_R, sig_W):
 
     adj_mat = np.zeros(((2 + len(im) * len(im[0])), (2 + len(im) * len(im[0]))))
 
-    # Next add weights I guess
+    # Next add weights
 
     for i in range(len(im)):
         for j in range(len(im[0])):
@@ -138,8 +142,12 @@ def graph_to_im(graph, cut, image, file_extension=''):
 if __name__ == "__main__":
     # Create results file
     results_file = open("image_graph_test1.txt","w")
-    g = im_to_graph("tiny_picture.png", 10, 1000000)
-    im = sp.imread("tiny_picture.png", mode='RGB')
+    #im = sp.imread(filename, mode='RGB')
+
+    im = [[[255, 255, 255],[255,255,255],[255,255,255]],
+          [[0,0,0],[0,0,0],[255,255,255]],
+          [[0,0,0],[0,0,0],[0,0,0]]]
+    g = im_to_graph(im, 10, 1000000)
     # im = [[[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
     #       [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
     #       [[0,0,0],[0,0,0],[255, 255, 255],[0,0,0],[0,0,0],[0,0,0], [0,0,0], [255, 255, 255], [0,0,0], [0,0,0]],
@@ -153,7 +161,7 @@ if __name__ == "__main__":
     np.save("test_adj_mat.npy", np.array(g.adj_mat))
 
     print("Testing Karger Cut Algorithm.")
-    for i in range(2):
+    for i in range(10):
 
         print("Graph initialized, iteration %s." % i)
         print(np.array(g.adj_mat))
